@@ -1,0 +1,24 @@
+flowchart TD
+ A["Début"] --> B[Charger points retenus]
+ B --> C[Pour chaque paire i,j]
+ C --> D[Calculer distance et temps LSPB]
+ D --> E{ i = j ? }
+ E -- Oui --> F[Coût diagonal nul et faisable]
+ E -- Non --> G[Découper le segment en K sous-pas]
+ G --> H[Évaluer W au milieu de chaque sous-segment]
+ H --> I[Fast path pseudo-inverse]
+ I --> J{T dans les bornes ?}
+ J -- Oui --> K[Calculer l'énergie]
+ J -- Non --> L[Résoudre QP borné SLSQP]
+ L --> M{Résidu et bornes valides ?}
+ M -- Non --> N[Retenter au milieu des bornes]
+ M -- Oui --> K
+ N --> O{Seconde résolution valide ?}
+ O -- Oui --> K
+ O -- Non --> P[Marquer la paire infaisable]
+ F --> Q
+ K --> Q[Ajouter ligne i,j,distance,time,energy,feasible]
+ P --> Q
+ Q{Toutes les paires ?} -- Non --> C
+ Q -- Oui --> R[Écrire cost_matrix.csv]
+ R --> S["Fin"]

@@ -1,0 +1,13 @@
+flowchart TD
+ A["Début"] --> B[Charger points, coûts et solutions Pareto]
+ B --> C{Front vide ?}
+ C -- Oui --> X[Erreur]
+ C -- Non --> D[Sélectionner argmin temps]
+ D --> E[Sélectionner argmin énergie]
+ E --> F[Normaliser temps et énergie]
+ F --> G[Sélectionner la distance minimale à  0,0 ]
+ G --> H[Pour chaque solution, reconstruire les waypoints]
+ H --> I[Calculer les cumuls temps et énergie]
+ I --> J[Ajouter stabilisation au résumé uniquement]
+ J --> K[Écrire trajectories.csv et trajectories_summary.csv]
+ K --> L["Fin"]

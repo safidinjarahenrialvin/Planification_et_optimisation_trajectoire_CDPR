@@ -1,0 +1,22 @@
+{
+  "centre": {
+    "id": 4,
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.4499999999999999,
+    "feasible": true,
+    "status": 0
+  },
+  "summary": {
+    "n_total": 9,
+    "n_kept": 9,
+    "n_rejected_cause_a": 0,
+    "n_rejected_cause_b": 0,
+    "n_rejected_total": 0,
+    "reject_rate": 0.0,
+    "cause_a_rate": 0.0,
+    "reject_rate_threshold": 0.15,
+    "cause_a_threshold": 0.05
+  },
+  "alerts": []
+}

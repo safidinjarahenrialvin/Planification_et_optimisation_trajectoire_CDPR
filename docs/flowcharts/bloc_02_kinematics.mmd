@@ -1,0 +1,10 @@
+flowchart TD
+ A["Début"] --> B[Recevoir pose cartésienne p]
+ B --> C[Calculer les positions des attaches]
+ C --> D[Calculer A_i - B_i pour chaque câble]
+ D --> E[Calculer les longueurs L_i = //A_i-B_i//]
+ E --> F{Longueurs valides ?}
+ F -- Non --> X[Signaler pose dégénérée]
+ F -- Oui --> G[Retourner les huit longueurs]
+ G --> H[Calculer éventuellement la matrice de structure W]
+ H --> I["Fin"]

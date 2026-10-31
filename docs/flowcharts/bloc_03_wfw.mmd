@@ -1,0 +1,10 @@
+flowchart TD
+ A["Début"] --> B[Recevoir pose, RobotModel et Config]
+ B --> C[Calculer W p ]
+ C --> D[Construire rhs gravitaire]
+ D --> E[Résoudre W T = rhs]
+ E --> F{Solution avec T_min ≤ T ≤ T_max ?}
+ F -- Oui --> G[Retourner faisable et tensions]
+ F -- Non --> H[Retourner infaisable et message]
+ G --> I["Fin"]
+ H --> I

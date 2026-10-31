@@ -1,0 +1,14 @@
+flowchart TD
+ A["Début"] --> B[Charger points, coûts et trajectoires]
+ B --> C[Identifier le centre]
+ C --> D{Grille complète ?}
+ D -- Oui --> E[Construire baseline zigzag]
+ D -- Non --> F[Construire baseline nearest-neighbor avec backtracking]
+ E --> G
+ F --> G[Imposer départ et retour au centre]
+ G --> H[Évaluer temps, énergie et distance par cost_matrix]
+ H --> I[Évaluer time_opt, energy_opt et compromise]
+ I --> J[Calculer les gains en pourcentage]
+ J --> K[Construire comparison.csv]
+ K --> L[Construire diagnostic et figures]
+ L --> M["Fin"]

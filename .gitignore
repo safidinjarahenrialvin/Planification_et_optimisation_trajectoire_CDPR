@@ -1,0 +1,48 @@
+# ----------------------------------------------------------------------
+# Environnement virtuel Python
+# ----------------------------------------------------------------------
+.venv/
+venv/
+env/
+
+# ----------------------------------------------------------------------
+# Cache Python et outils
+# ----------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ----------------------------------------------------------------------
+# Sorties du pipeline (artefacts régénérables par `run_pipeline.py`)
+# ----------------------------------------------------------------------
+# Règle : les CSV/PNG dans data/outputs/ sont régénérables et ne doivent
+# pas être versionnés (cf. RUNBOOK §10). Pour archiver les résultats
+# finaux du mémoire, créer un dossier data/snapshots/<date>/ manuel.
+data/outputs/
+data/ci-output/
+data/runs/*
+!data/runs/.gitkeep
+data/snapshots/*
+!data/snapshots/.gitkeep
+!data/snapshots/README.md
+
+# ----------------------------------------------------------------------
+# IDE / OS
+# ----------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

@@ -1,0 +1,18 @@
+flowchart TD
+ A["Début reprise"] --> B[Calculer fingerprint actuel]
+ B --> C{--resume ?}
+ C -- Non --> D[Écrire .config_hash et recalculer]
+ C -- Oui --> E{.config_hash présent ?}
+ E -- Non --> X[Refuser la reprise]
+ E -- Oui --> F[Lire hash enregistré]
+ F --> G{Hash identique ?}
+ G -- Non --> Y[Refuser configuration différente]
+ G -- Oui --> H[Pour chaque bloc, vérifier tous les fichiers]
+ H --> I{Sorties présentes et non vides ?}
+ I -- Oui --> J[SKIP puis relire artefacts]
+ I -- Non --> K[Exécuter le bloc et chronométrer]
+ J --> L
+ K --> L{Tous les blocs terminés ?}
+ L -- Non --> H
+ L -- Oui --> M[Lire validation et rapporter]
+ M --> N["Fin"]

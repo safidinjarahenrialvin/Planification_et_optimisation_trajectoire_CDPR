@@ -1,0 +1,98 @@
+{
+  "overall_status": "WARN",
+  "checks": [
+    {
+      "name": "config_consistency",
+      "status": "PASS",
+      "detail": "N=81 (9×9), T ∈ [1.0, 58.0] N, orientation=fixe",
+      "metrics": {
+        "N": 81,
+        "T_min": 1.0,
+        "T_max": 58.0,
+        "z_absolu_r0": 0.4499999999999999
+      },
+      "duration_s": 1.3839000075677177e-05
+    },
+    {
+      "name": "points_filtres",
+      "status": "PASS",
+      "detail": "81 points, tous dans les bornes et faisables (WFW re-vérifié).",
+      "metrics": {
+        "n_points": 81,
+        "n_infeasible": 0,
+        "out_of_bounds": false
+      },
+      "duration_s": 0.1295546110000032
+    },
+    {
+      "name": "cost_matrix",
+      "status": "PASS",
+      "detail": "Matrice symétrique, toutes paires faisables, diagonale nulle.",
+      "metrics": {
+        "n_entries": 6561,
+        "max_asym_time_s": 0.0,
+        "max_asym_energy_J": 0.0,
+        "n_infeasible_pairs": 0,
+        "n_reciprocal_missing": 0,
+        "infeasible_rate": 0.0,
+        "diag_ok": true
+      },
+      "duration_s": 0.005113292000032743
+    },
+    {
+      "name": "solutions_pareto",
+      "status": "WARN",
+      "detail": "Front de 2 solutions (< 10 recommandé par §7). Augmenter pop_size/n_gen pour un run de production.",
+      "metrics": {
+        "n_solutions": 2,
+        "n_dominated": 0,
+        "dominance_tol_time_s": 0.001,
+        "dominance_tol_energy_J": 0.01,
+        "time_range_s": [
+          254.079565,
+          254.818189
+        ],
+        "energy_range_J": [
+          304.319101,
+          304.33305
+        ]
+      },
+      "duration_s": 0.0008968710001227009
+    },
+    {
+      "name": "trajectories",
+      "status": "PASS",
+      "detail": "3 trajectoires valides, centre aux extrémités, totaux cohérents.",
+      "metrics": {
+        "n_kinds": 3,
+        "center_id": 40,
+        "n_points_expected": 81
+      },
+      "duration_s": 0.0007383039999240282
+    },
+    {
+      "name": "profiles",
+      "status": "PASS",
+      "detail": "7803 samples, |v| max = 0.0450 m/s, v=0 aux waypoints, monotonie OK.",
+      "metrics": {
+        "n_samples": 7803,
+        "v_max_observed": 0.045,
+        "v_max_config": 0.045
+      },
+      "duration_s": 0.0985517809999692
+    },
+    {
+      "name": "cross_consistency",
+      "status": "PASS",
+      "detail": "Cumuls profils ↔ matrice ↔ summary cohérents.",
+      "metrics": {},
+      "duration_s": 0.00241209799992248
+    }
+  ],
+  "summary": {
+    "n_pass": 6,
+    "n_warn": 1,
+    "n_fail": 0,
+    "n_total": 7
+  }
+}

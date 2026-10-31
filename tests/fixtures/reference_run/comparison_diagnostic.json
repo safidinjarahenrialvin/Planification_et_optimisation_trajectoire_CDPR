@@ -1,0 +1,25 @@
+{
+  "baseline_kind": "baseline_zigzag",
+  "optimal_beats_baseline": true,
+  "tradeoff_only": true,
+  "has_anomaly": false,
+  "min_time_gain_pct": 6.1535888516327475,
+  "min_energy_gain_pct": 12.831856435924854,
+  "baseline_time_s": 98.232286,
+  "baseline_energy_J": 197.98825,
+  "per_trajectory": {
+    "time_opt": {
+      "gain_time_pct": 21.41130157553291,
+      "gain_energy_pct": 12.831856435924854
+    },
+    "energy_opt": {
+      "gain_time_pct": 6.1535888516327475,
+      "gain_energy_pct": 14.027942567298812
+    },
+    "compromise": {
+      "gain_time_pct": 16.32539733423286,
+      "gain_energy_pct": 13.230551813049516
+    }
+  },
+  "warning": null
+}

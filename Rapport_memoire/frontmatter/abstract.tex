@@ -1,0 +1,24 @@
+% ABSTRACT
+\chapter*{ABSTRACT}
+\addcontentsline{toc}{chapter}{Abstract}
+\thispagestyle{plain}
+\setlength{\parskip}{0.55em}
+
+This project consists in designing a method that allows a cable-driven parallel robot (CDPR), suspended above a field, to move autonomously in order to photograph crops and monitor their condition, particularly their water needs. The processing pipeline first defines a path covering the relevant points of the field, then smooths this trajectory to limit vibrations that would otherwise degrade image quality, and finally determines automatically the best trade-off between travel time, energy consumption, field coverage, and positioning accuracy, through multi-objective optimization.
+
+The system delivers three concrete outcomes:
+\begin{itemize}[itemsep=2pt]
+  \item a ready-to-use trajectory for the robot, complying with its real mechanical constraints (cables must remain within a defined tension range);
+  \item a set of possible solutions to choose from, depending on whether speed, energy savings, or image quality is prioritized;
+  \item a simulation protocol allowing these solutions to be tested and compared before any actual robot movement.
+\end{itemize}
+
+This approach opens up several possibilities: scheduling an automatic inspection round, objectively comparing different movement strategies, or later integrating a real-time reactive capability should conditions change during the trajectory. The project favors a simple, low-cost, and evolutive solution, accepting certain modeling simplifications rather than pursuing a perfectly accurate but impractical design.
+
+This sub-project thus provides a simple and reusable method for turning a cable-driven robot into an autonomous agricultural monitoring tool, easy to simulate and to further develop.
+
+\vspace{0.4cm}
+\textbf{Keywords:} Cable-driven parallel robot (CDPR), trajectory, path planning, multi-objective optimization, trade-off, field coverage, precision agriculture, crop monitoring, simulation, low cost.
+
+
+\clearpage

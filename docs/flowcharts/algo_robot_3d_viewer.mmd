@@ -1,0 +1,17 @@
+flowchart TD
+ A["Début viewer"] --> B[Lire plateforme, trajectoire et points optionnels]
+ B --> C[Créer Config et Robot3DViewer]
+ C --> D[Ajouter bâti et supports]
+ D --> E[Calculer plateforme et attaches]
+ E --> F[Ajouter huit câbles et Mesh3d]
+ F --> G{Afficher grille ?}
+ G -- Oui --> H[Ajouter points au niveau du sol]
+ G -- Non --> I[Masquer grille]
+ H --> J
+ I --> J{Afficher trajectoire ?}
+ J -- Oui --> K[Tracer waypoints triés par rank]
+ J -- Non --> L[Masquer trajectoire]
+ K --> M
+ L --> M[Configurer caméra et axes]
+ M --> N[Écrire HTML Plotly CDN ou offline]
+ N --> O["Fin"]

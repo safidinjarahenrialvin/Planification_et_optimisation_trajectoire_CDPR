@@ -1,0 +1,105 @@
+% mise_en_page.tex
+\geometry{
+  a4paper,
+  left=2.4cm,
+  right=2.4cm,
+  top=2.4cm,
+  bottom=2.4cm
+}
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.35em}
+
+\setlength{\floatsep}{6pt plus 1pt minus 2pt}
+\setlength{\textfloatsep}{8pt plus 1pt minus 2pt}
+\setlength{\intextsep}{6pt plus 1pt minus 2pt}
+\setlength{\abovecaptionskip}{3pt}
+\setlength{\belowcaptionskip}{2pt}
+% Évite les pages quasi vides dues aux flottants
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.9}
+\renewcommand{\floatpagefraction}{0.7}
+
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\raggedright}
+  {\chaptertitlename\ \thechapter}{16pt}{\Huge\raggedright}
+\titleformat{\section}
+  {\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+
+\titlespacing*{\chapter}{0pt}{20pt}{14pt}
+\titlespacing*{\section}{0pt}{14pt}{8pt}
+\titlespacing*{\subsection}{0pt}{10pt}{5pt}
+
+\renewcommand{\contentsname}{SOMMAIRE}
+\renewcommand{\chaptername}{Chapitre}
+\renewcommand{\bibname}{Bibliographie}
+\renewcommand{\thechapter}{\Roman{chapter}}
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+\renewcommand{\listfigurename}{TABLE DES FIGURES}
+\renewcommand{\listtablename}{LISTE DES TABLEAUX}
+\renewcommand{\cftfigpresnum}{}
+\renewcommand{\cfttabpresnum}{}
+% Largeur suffisante pour des numéros du type « III.10 »
+\setlength{\cftfignumwidth}{4.2em}
+\setlength{\cfttabnumwidth}{4.2em}
+\renewcommand{\cftfigaftersnum}{\hspace{0.5em}}
+\renewcommand{\cfttabaftersnum}{\hspace{0.5em}}
+% Interligne aéré pour LOF/LOT (reste sur 1 page)
+\setlength{\cftbeforefigskip}{1.6pt}
+\setlength{\cftbeforetabskip}{3.5pt}
+\renewcommand{\cftfigfont}{\footnotesize}
+\renewcommand{\cfttabfont}{\small}
+\renewcommand{\cftfigpagefont}{\footnotesize}
+\renewcommand{\cfttabpagefont}{\small}
+% Profondeur du sommaire : chapitres, sections, sous-sections (pas les paragraphes)
+\setcounter{tocdepth}{2}
+
+% Interligne aéré pour le SOMMAIRE
+\setlength{\cftbeforechapskip}{5pt}
+\setlength{\cftbeforesecskip}{2.2pt}
+\setlength{\cftbeforesubsecskip}{1.2pt}
+\renewcommand{\cftchapfont}{\normalsize\bfseries}
+\renewcommand{\cftsecfont}{\small}
+\renewcommand{\cftsubsecfont}{\small}
+\renewcommand{\cftchappagefont}{\normalsize\bfseries}
+\renewcommand{\cftsecpagefont}{\small}
+\renewcommand{\cftsubsecpagefont}{\small}
+
+\setcounter{secnumdepth}{3}
+% Numérotation par chapitre activée dans main.tex après le frontmatter
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyfoot[C]{\thepage}%
+  \renewcommand{\headrulewidth}{0pt}%
+}
+
+\captionsetup{font=small,labelfont=bf,labelsep=space}
+\captionsetup[figure]{name=FIGURE}
+\captionsetup[table]{name=TABLE}
+
+\numberwithin{equation}{chapter}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=blue,
+  pdftitle={Planification et optimisation des trajectoires d'un robot parallèle à câbles},
+  pdfauthor={AFANDE Younouska Nourania \& SAFIDINJARA Henri Alvin}
+}
+
+\graphicspath{{figures/}{figures/chapitre1/}{figures/chapitre2/}{figures/chapitre3/}}
+
+% Tolérance pour éviter Overfull/Underfull mineurs
+\setlength{\emergencystretch}{2em}

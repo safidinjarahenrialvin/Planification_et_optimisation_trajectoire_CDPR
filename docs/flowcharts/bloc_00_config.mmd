@@ -1,0 +1,13 @@
+flowchart TD
+ A["Début"] --> B[Lire les paramètres CLI]
+ B --> C{Mode FAST ?}
+ C -- Oui --> D[Créer Config.with_n 3 ]
+ C -- Non --> E[Créer Config.with_n n ]
+ D --> F[Appliquer plateforme, masse et bornes]
+ E --> F
+ F --> G[Résoudre K, pop_size, n_gen et seed]
+ G --> H{Paramètres valides ?}
+ H -- Non --> X[Erreur de configuration]
+ H -- Oui --> I[Calculer limites, géométrie et constantes]
+ I --> J[Retourner Config effective]
+ J --> K["Fin"]

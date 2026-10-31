@@ -1,0 +1,18 @@
+flowchart TD
+ A["Début"] --> B[Construire les matrices temps, énergie et faisabilité]
+ B --> C[Encoder une permutation des points non centraux]
+ C --> D[Reconstruire centre → points → centre]
+ D --> E[Évaluer chaque tour]
+ E --> F{Toutes les paires faisables ?}
+ F -- Oui --> G[Fitness = somme temps et énergie]
+ F -- Non --> H[Fitness = pénalité 10^6 1+n_bad ]
+ G --> I[NSGA-II : sampling, crossover, mutation]
+ H --> I
+ I --> J{Générations terminées ?}
+ J -- Non --> E
+ J -- Oui --> K[Extraire le front de Pareto]
+ K --> L[Filtrer strictement les solutions dominées]
+ L --> M{Front dégénéré ?}
+ M -- Oui --> X[DegenerateFrontError]
+ M -- Non --> N[Écrire solutions_pareto.csv et solutions_orders.csv]
+ N --> O["Fin"]

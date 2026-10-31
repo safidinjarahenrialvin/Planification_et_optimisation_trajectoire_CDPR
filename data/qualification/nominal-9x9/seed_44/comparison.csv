@@ -1,0 +1,5 @@
+kind,time_motion_s,energy_J,distance_m,n_waypoints,gain_time_vs_baseline_pct,gain_energy_vs_baseline_pct
+baseline_zigzag,312.859680,412.563595,8.612952,82,0.000000,0.000000
+time_opt,261.194702,317.746620,6.297963,82,16.513786,22.982390
+energy_opt,265.116435,315.783837,6.474220,82,15.260274,23.458143
+compromise,261.458173,315.811067,6.309157,82,16.429572,23.451543

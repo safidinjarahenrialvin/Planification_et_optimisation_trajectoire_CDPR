@@ -1,0 +1,21 @@
+% RÉSUMÉ
+\chapter*{RÉSUMÉ}
+\addcontentsline{toc}{chapter}{Résumé}
+\thispagestyle{plain}
+\setlength{\parskip}{0.55em}
+
+Ce projet consiste à concevoir une méthode permettant à un robot suspendu par des câbles (un robot parallèle à câbles, ou CDPR) de se déplacer de façon autonome au-dessus d'un champ pour photographier les plantes et surveiller leur état, notamment leur besoin en eau. La chaîne de traitement définit d'abord un chemin couvrant les points utiles du champ, le rend ensuite plus fluide grâce à un lissage de trajectoire (pour limiter les vibrations qui nuiraient à la qualité des images), puis détermine automatiquement le meilleur compromis entre temps de parcours, énergie consommée, couverture du terrain et précision de positionnement, via une optimisation multi-objectif.
+
+Le système produit trois résultats concrets :
+\begin{itemize}[itemsep=2pt]
+  \item Une trajectoire prête à l'emploi pour le robot, respectant ses contraintes mécaniques ;
+  \item Un ensemble de solutions possibles parmi lesquelles choisir, selon qu'on privilégie la rapidité, les économies d'énergie ou la qualité des prises de vue ;
+  \item Un protocole de simulation permettant de tester et comparer ces solutions avant tout déplacement réel du robot.
+\end{itemize}
+
+Cette approche ouvre plusieurs possibilités : programmer une tournée d'inspection automatique, comparer objectivement différentes stratégies de déplacement, ou intégrer plus tard une capacité de réaction en temps réel si les conditions changent en cours de trajet. Le projet privilégie une solution simple, peu coûteuse et évolutive, acceptant certaines simplifications de modélisation plutôt que de viser une précision parfaite mais difficile à mettre en œuvre.
+
+Ce sous-projet apporte ainsi une méthode simple et réutilisable pour transformer un robot à câbles en outil de surveillance agricole autonome, facile à simuler et à faire évoluer.
+
+\vspace{0.4cm}
+\textbf{Mots-clés :} Robot à câbles (CDPR), trajectoire, planification de chemin, optimisation multi-objectif, meilleur compromis, couverture du terrain, agriculture de précision, surveillance des plantes, faible coût.

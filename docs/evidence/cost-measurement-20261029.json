@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "measured_at_utc": "2026-10-28T21:04:51Z",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "platform": "linux",
+  "process_peak_rss_mb": 137.363,
+  "exports": [
+    {
+      "path": "/tmp/tandem-cost-5zoldxjj/fast",
+      "input_size_bytes": 2070879,
+      "zip_size_bytes": 1556212,
+      "compression_ratio": 0.751474,
+      "wall_time_s": 0.102054,
+      "python_peak_allocated_bytes": 2010057
+    },
+    {
+      "path": "/tmp/tandem-cost-5zoldxjj/nominal-9x9/seed_42",
+      "input_size_bytes": 3738358,
+      "zip_size_bytes": 2230512,
+      "compression_ratio": 0.596656,
+      "wall_time_s": 0.16329,
+      "python_peak_allocated_bytes": 2858631
+    },
+    {
+      "path": "/tmp/tandem-cost-5zoldxjj/nominal-9x9/seed_43",
+      "input_size_bytes": 3741238,
+      "zip_size_bytes": 2233843,
+      "compression_ratio": 0.597087,
+      "wall_time_s": 0.155944,
+      "python_peak_allocated_bytes": 2650734
+    },
+    {
+      "path": "/tmp/tandem-cost-5zoldxjj/nominal-9x9/seed_44",
+      "input_size_bytes": 3778669,
+      "zip_size_bytes": 2253335,
+      "compression_ratio": 0.59633,
+      "wall_time_s": 0.152932,
+      "python_peak_allocated_bytes": 2662459
+    }
+  ],
+  "commands": [
+    {
+      "label": "pipeline_fast",
+      "command": [
+        "/home/ubuntu/tandem_sp2/.venv/bin/python",
+        "scripts/run_pipeline.py",
+        "--fast",
+        "--output-dir",
+        "/tmp/tandem-cost-5zoldxjj/fast"
+      ],
+      "returncode": 0,
+      "wall_time_s": 18.963834,
+      "child_cpu_time_s": 19.659584,
+      "child_peak_rss_mb_cumulative": 256.004,
+      "output_size_bytes": 2070879,
+      "stdout_tail": "9 octets\n  figures/comparison.png                                 96,500 octets\n  figures/pareto_front.png                               46,075 octets\n  figures/profiles.png                                  162,856 octets\n  figures/trajectories_3d_compromise.png                200,870 octets\n  figures/trajectories_3d_energy_opt.png                204,188 octets\n  figures/trajectories_3d_time_opt.png                  202,389 octets\n  figures/trajectories_comparison_2d.png                165,353 octets\n  figures/trajectories_comparison_grid.png              546,052 octets\n  figures/wfw_slice.png                                  27,674 octets\n  hypotheses_report.json                                  2,830 octets\n  hypotheses_report.md                                    3,103 octets\n  point_filter_report.json                                  399 octets\n  points_filtres.csv                                        515 octets\n  points_generes.csv                                        326 octets\n  points_generes_report.json                                784 octets\n  points_rejetes_cause_a.csv                                 36 octets\n  points_rejetes_cause_b.csv                                 36 octets\n  profiles.csv                                          197,232 octets\n  profiles_compromise.csv                                64,876 octets\n  profiles_energy_opt.csv                                72,945 octets\n  profiles_time_opt.csv                                  59,477 octets\n  run_manifest.json                                       1,337 octets\n  solutions_orders.csv                                    1,046 octets\n  solutions_pareto.csv                                    1,092 octets\n  trajectories.csv                                        1,937 octets\n  trajectories_summary.csv                                  314 octets\n  validation_report.json                                  2,567 octets\n\n========================================================================\n",
+      "stderr_tail": "       | Figure WFW écrite : /tmp/tandem-cost-5zoldxjj/fast/figures/wfw_slice.png\n21:05:06 [INFO   ] src.validator          | 6 figures écrites dans /tmp/tandem-cost-5zoldxjj/fast/figures\n21:05:06 [INFO   ] src.validator          | Rapport d'hypothèses écrit : /tmp/tandem-cost-5zoldxjj/fast/hypotheses_report.json et /tmp/tandem-cost-5zoldxjj/fast/hypotheses_report.md\n21:05:06 [INFO   ] pipeline_service       | [DONE ] 10_validator en 12.9 s\n21:05:06 [INFO   ] pipeline_service       | [START] 11_comparator\n21:05:06 [INFO   ] src.comparator         | Baseline : zigzag rows (grille complète 3×3).\n21:05:06 [INFO   ] src.comparator         | Baseline : zigzag rows (grille complète 3×3).\n21:05:06 [WARNING] matplotlib.font_manager | findfont: Failed to find font weight bold for Abyssinica SIL, now using 400.\n21:05:06 [WARNING] matplotlib.font_manager | findfont: Failed to find font weight bold for Lohit Devanagari, now using 400.\n21:05:06 [WARNING] matplotlib.font_manager | findfont: Failed to find font weight bold for Lohit Tamil, now using 400.\n21:05:06 [WARNING] matplotlib.font_manager | findfont: Failed to find font weight bold for Lohit Gujarati, now using 400.\n21:05:07 [INFO   ] src.comparator         | Figure comparative écrite : /tmp/tandem-cost-5zoldxjj/fast/figures/comparison.png\n21:05:09 [INFO   ] src.comparator         | Figure grille comparative écrite : /tmp/tandem-cost-5zoldxjj/fast/figures/trajectories_comparison_grid.png\n21:05:10 [INFO   ] src.comparator         | Figure 2D comparative écrite : /tmp/tandem-cost-5zoldxjj/fast/figures/trajectories_comparison_2d.png\n21:05:10 [INFO   ] src.comparator         | Baseline : zigzag rows (grille complète 3×3).\n21:05:10 [INFO   ] src.comparator         | Comparator : baseline=10 waypoints, optimal_beats_baseline=True, 2 CSV + 1 PNG + 1 JSON\n21:05:10 [INFO   ] pipeline_service       | [DONE ] 11_comparator en 4.1 s\n21:05:10 [INFO   ] run_pipeline           | Smoke test FAST terminé avec WARN Pareto attendu : code 0.\n"
+    },
+    {
+      "label": "qualification_nominale_9x9",
+      "command": [
+        "/home/ubuntu/tandem_sp2/.venv/bin/python",
+        "scripts/qualify_nominal.py",
+        "--output-dir",
+        "/tmp/tandem-cost-5zoldxjj/nominal-9x9",
+        "--seeds",
+        "42",
+        "43",
+        "44",
+        "--pop-size",
+        "500",
+        "--n-gen",
+        "1500"
+      ],
+      "returncode": 0,
+      "wall_time_s": 595.321091,
+      "child_cpu_time_s": 595.820421,
+      "child_peak_rss_mb_cumulative": 264.195,
+      "output_size_bytes": 11262778,
+      "stdout_tail": "seed=42 status=COMPLETED validation=WARN pareto=2\nseed=43 status=COMPLETED validation=WARN pareto=1\nseed=44 status=COMPLETED validation=WARN pareto=1\n",
+      "stderr_tail": "findfont: Failed to find font weight bold for Abyssinica SIL, now using 400.\nfindfont: Failed to find font weight bold for Lohit Devanagari, now using 400.\nfindfont: Failed to find font weight bold for Lohit Tamil, now using 400.\nfindfont: Failed to find font weight bold for Lohit Gujarati, now using 400.\n"
+    }
+  ],
+  "limitations": [
+    "Les durées sont des observations de cet environnement et de cette configuration.",
+    "child_peak_rss_mb_cumulative est cumulatif entre commandes du même processus parent.",
+    "Aucune conclusion scientifique n'est déduite de ces mesures d'exploitation."
+  ],
+  "campaign": {
+    "path": "/tmp/tandem-cost-5zoldxjj/nominal-9x9",
+    "artifact_size_bytes": 11262778,
+    "seed_count_measured": 3
+  },
+  "process_peak_rss_mb_after": 139.113
+}

@@ -1,0 +1,9 @@
+flowchart TD
+ A["Début figures"] --> B[Charger artefacts validés]
+ B --> C[Générer coupe WFW et points]
+ C --> D[Générer front Pareto et sélections]
+ D --> E[Pour chaque kind, générer trajectoire 3D]
+ E --> F[Générer profils norme_vitesse t  et limite vmax]
+ F --> G[Construire hypothèses B1-B5]
+ G --> H[Écrire PNG, hypotheses.json et hypotheses.md]
+ H --> I["Fin"]

@@ -1,0 +1,15 @@
+flowchart TD
+ A["Début"] --> B[Charger trajectories.csv]
+ B --> C[Vérifier kind, rank, x, y, z]
+ C --> D[Pour chaque trajectoire]
+ D --> E[Construire les segments entre waypoints]
+ E --> F[Calculer d et durée LSPB]
+ F --> G{Profil trapézoïdal ?}
+ G -- Oui --> H[Accélération, palier, décélération]
+ G -- Non --> I[Profil triangulaire]
+ H --> J[Échantillonner à dt avec bornes incluses]
+ I --> J
+ J --> K[Calculer position et vitesse vectorielles]
+ K --> L[Supprimer le doublon à chaque jonction]
+ L --> M[Écrire profil par kind et profiles.csv]
+ M --> N["Fin"]

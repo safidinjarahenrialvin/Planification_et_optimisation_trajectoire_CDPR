@@ -1,0 +1,17 @@
+flowchart TD
+ A["Début"] --> B[Créer Config, RobotModel et WFW3DViewer]
+ B --> C[Construire grille x,y,z]
+ C --> D[Calculer WCW avec T_min=0]
+ D --> E[Créer masque global faisable]
+ E --> F[Calculer WFW avec T_min de Config]
+ F --> G[Restreindre les appels aux points du WCW]
+ G --> H[Construire les volumes WFWVolume]
+ H --> I[Extraire points faisables]
+ I --> J{ConvexHull possible ?}
+ J -- Oui --> K[Tracer enveloppes convexes]
+ J -- Non --> L[Fallback scatter]
+ K --> M
+ L --> M[Tracer bâti, plateforme et câbles]
+ M --> N[Configurer axes, vue et légende]
+ N --> O[Écrire workspace_3d.png]
+ O --> P["Fin"]

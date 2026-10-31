@@ -1,0 +1,134 @@
+\documentclass[12pt,a4paper]{report}
+
+% -------------------- Configuration --------------------
+\input{config/packages}
+\input{config/mise_en_page}
+\input{config/commandes}
+
+\begin{document}
+
+% -------------------- Front matter --------------------
+\input{frontmatter/page_garde}
+
+\pagenumbering{roman}
+\setcounter{page}{1}
+\markboth{}{}
+
+% Numérotation simple (1, 2, 3…) pour les tableaux/figures du frontmatter
+\renewcommand{\thetable}{\arabic{table}}
+\renewcommand{\thefigure}{\arabic{figure}}
+
+\input{frontmatter/remerciements}
+\input{frontmatter/cahier_des_charges}
+\input{frontmatter/resume}
+\input{frontmatter/abstract}
+
+\input{frontmatter/acronymes}
+
+\clearpage
+\listoffigures
+\clearpage
+\listoftables
+\clearpage
+\tableofcontents
+\clearpage
+
+% -------------------- Corps du mémoire --------------------
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% Frontmatter + intro + cadrage : numérotation simple (1, 2, 3…)
+\renewcommand{\thetable}{\arabic{table}}
+\renewcommand{\thefigure}{\arabic{figure}}
+
+\input{chapters/introduction}
+\input{chapters/cadrage}
+
+% À partir du Chapitre I : numérotation I.1, II.1, III.1…
+\setcounter{figure}{0}
+\setcounter{table}{0}
+\numberwithin{figure}{chapter}
+\numberwithin{table}{chapter}
+\numberwithin{equation}{chapter}
+
+\input{chapters/chapitre1}
+\input{chapters/chapitre2}
+\input{chapters/chapitre3}
+
+% -------------------- Conclusion générale --------------------
+\input{chapters/conclusion_generale}
+
+% -------------------- Annexe --------------------
+\clearpage
+\pagenumbering{roman}
+\setcounter{page}{10}% x, xi, xii, ... jusqu'à la fin
+\input{annexes/annexe_B}
+
+% -------------------- Bibliographie --------------------
+\clearpage
+\bibliographystyle{plain}
+% Si vous utilisez references.bib avec BibTeX, décommentez :
+% \bibliography{references}
+% Version actuelle : bibliographie manuelle
+\begin{thebibliography}{99}
+\addcontentsline{toc}{chapter}{Bibliographie}
+
+\bibitem{dahiya2022}
+Dahiya A. et al., \textit{Adaptive Passivity-Based Pose Tracking Control of Cable-Driven Parallel Robots for Multiple Attitude Parameterizations}, arXiv:2209.03250.
+
+\bibitem{tho2022}
+Tho T.P. et al., \textit{An Overview of Cable-Driven Parallel Robots: Workspace, Tension Distribution, and Cable Sagging}, Mathematical Problems in Engineering, Hindawi, 2022.
+
+\bibitem{gouttefarde2011}
+Gouttefarde M. et al., \textit{Interval analysis for the Wrench-Feasible Workspace of Cable-Driven Parallel Robots}, 2011.
+
+\bibitem{mdpi2022}
+\textit{Cable-Driven Parallel Robots: A Systematic Review}, MDPI, 2022.
+
+\bibitem{mdpi2023}
+\textit{Advances in Cable-Driven Parallel Robots}, MDPI, 2023.
+
+\bibitem{arXiv2101}
+\textit{Cable-Driven Parallel Robot Modeling and Control}, arXiv:2101.xxxxx.
+
+\bibitem{arXiv2311}
+\textit{Trajectory Planning for Cable Robots}, arXiv:2311.xxxxx.
+
+\bibitem{arXiv2403}
+\textit{Multi-Objective Optimization of CDPR Trajectories}, arXiv:2403.xxxxx.
+
+\bibitem{liu2023}
+Liu et al., \textit{Path Planning Methods for Parallel Robots}, 2023.
+
+\bibitem{gasparetto2015}
+Gasparetto A. et al., \textit{Path Planning and Trajectory Planning Algorithms: A General Overview}, 2015.
+
+\bibitem{choset1998}
+Choset H., Pignon P., \textit{Coverage Path Planning: The Boustrophedon Cellular Decomposition}, 1998.
+
+\bibitem{duan2014}
+Duan et al., \textit{TSP and Vehicle Routing for Mobile Robots}, 2014.
+
+\bibitem{lspb}
+\textit{Linear Segments with Parabolic Blends (LSPB) Trajectory Profiles}.
+
+\bibitem{zhang2024}
+Zhang et al., \textit{Trajectory Smoothing for Robotic Systems}, 2024.
+
+\bibitem{deb2002}
+Deb K. et al., \textit{A Fast and Elitist Multiobjective Genetic Algorithm: NSGA-II}, IEEE TEC, 2002.
+
+\bibitem{khayour2022}
+Khayour et al., \textit{Robust Control of Cable-Driven Parallel Robots}, 2022.
+
+\bibitem{puphal2026}
+Puphal et al., \textit{Uncertainty Management in Robotic Trajectory Planning}, 2026.
+
+\end{thebibliography}
+
+% -------------------- Annexes (optionnel) --------------------
+% \input{annexes/annexe_A}
+% \input{annexes/annexe_B}
+% \input{annexes/annexe_C}
+
+\end{document}

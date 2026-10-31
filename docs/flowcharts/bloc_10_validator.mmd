@@ -1,0 +1,20 @@
+flowchart TD
+ A["Début"] --> B[Charger les artefacts des blocs 4 à 9]
+ B --> C[Contrôler Config]
+ C --> D[Revalider les points avec limites et WFW]
+ D --> E[Contrôler matrice : colonnes, symétrie et diagonale]
+ E --> F[Contrôler Pareto et dominance]
+ F --> G[Contrôler trajectoires et centre]
+ G --> H[Contrôler profils : vitesse et temps]
+ H --> I[Contrôler cohérence croisée summary/profiles]
+ I --> J[Compter PASS, WARN et FAIL]
+ J --> K{FAIL présent ?}
+ K -- Oui --> L[overall_status = FAIL]
+ K -- Non --> M{WARN présent ?}
+ M -- Oui --> N[overall_status = WARN]
+ M -- Non --> O[overall_status = PASS]
+ L --> P[Générer figures et hypothèses]
+ N --> P
+ O --> P
+ P --> Q[Écrire validation_report.json]
+ Q --> R["Fin"]

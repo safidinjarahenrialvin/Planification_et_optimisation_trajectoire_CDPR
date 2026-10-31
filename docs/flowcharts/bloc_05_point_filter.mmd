@@ -1,0 +1,24 @@
+flowchart TD
+ A["Début"] --> B[Charger et vérifier id,x,y,z,ligne,colonne]
+ B --> C[Identifier le point le plus proche de  0,0 ]
+ C --> D{Centre à moins de 10^-9 m ?}
+ D -- Non --> X[Erreur centre absent]
+ D -- Oui --> E[Test WFW du centre]
+ E --> F{Centre faisable ?}
+ F -- Non --> Y[CenterNotFeasibleError]
+ F -- Oui --> G[Parcourir les autres points]
+ G --> H{Dans les limites Config ?}
+ H -- Non --> I[Rejet Cause A]
+ H -- Oui --> J[Test WFW]
+ J --> K{Faisable ?}
+ K -- Oui --> L[Ajouter aux points retenus]
+ K -- Non --> M[Rejet Cause B]
+ I --> N
+ L --> N
+ M --> N
+ N{Tous les points traités ?} -- Non --> G
+ N -- Oui --> O{Au moins 4 points retenus ?}
+ O -- Non --> Z[InsufficientPointsError]
+ O -- Oui --> P[Calculer taux et alertes]
+ P --> Q[Écrire quatre fichiers de filtrage]
+ Q --> R["Fin"]

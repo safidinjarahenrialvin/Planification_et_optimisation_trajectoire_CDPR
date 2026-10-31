@@ -1,0 +1,136 @@
+{
+  "aggregates": {
+    "energy_interval_overlap": {
+      "mean": 0.0,
+      "min": 0.0
+    },
+    "n_solutions": {
+      "coefficient_of_variation": 0.3535533905932738,
+      "max": 4,
+      "mean": 2.6666666666666665,
+      "min": 2,
+      "std": 0.9428090415820634
+    },
+    "normalized_chamfer": {
+      "max": 1.2066856065750504,
+      "mean": 0.8007784995617206
+    },
+    "normalized_hausdorff": {
+      "max": 1.3183740046793613,
+      "mean": 0.8791911060457634
+    },
+    "time_interval_overlap": {
+      "mean": 0.0,
+      "min": 0.0
+    }
+  },
+  "fronts": [
+    {
+      "energy": {
+        "max": 296.811317,
+        "mean": 296.706087,
+        "min": 296.600857,
+        "std": 0.10522999999997751
+      },
+      "n_solutions": 2,
+      "run_dir": "seed_42",
+      "seed": 42,
+      "time": {
+        "max": 248.825047,
+        "mean": 248.45573500000006,
+        "min": 248.0864230000001,
+        "std": 0.369311999999951
+      }
+    },
+    {
+      "energy": {
+        "max": 304.33305,
+        "mean": 304.3260755,
+        "min": 304.319101,
+        "std": 0.00697450000001254
+      },
+      "n_solutions": 2,
+      "run_dir": "seed_43",
+      "seed": 43,
+      "time": {
+        "max": 254.818189,
+        "mean": 254.44887699999998,
+        "min": 254.079565,
+        "std": 0.36931199999999365
+      }
+    },
+    {
+      "energy": {
+        "max": 317.74662,
+        "mean": 316.4541025,
+        "min": 315.7838369999999,
+        "std": 0.795893198932682
+      },
+      "n_solutions": 4,
+      "run_dir": "seed_44",
+      "seed": 44,
+      "time": {
+        "max": 265.116435,
+        "mean": 262.284408,
+        "min": 261.194702,
+        "std": 1.6378121023018928
+      }
+    }
+  ],
+  "interpretation": "Les métriques décrivent la variabilité observée entre seeds. Elles ne définissent pas à elles seules un seuil d’acceptation scientifique ; une revue humaine doit fixer les seuils de stabilité et examiner les trajectoires, les gains et les hypothèses physiques.",
+  "objective_definition": {
+    "distance_normalization": "Étendue observée sur tous les fronts de la campagne",
+    "energy": "Énergie à minimiser (J)",
+    "time": "Temps de mouvement à minimiser (s)"
+  },
+  "observations": {
+    "cardinality_varies": true,
+    "energy_envelopes_do_not_all_overlap": true,
+    "fronts_are_not_identical": true,
+    "time_envelopes_do_not_all_overlap": true
+  },
+  "pairwise": [
+    {
+      "energy_interval_overlap": 0.0,
+      "fraction_a_dominated_by_b": 0.0,
+      "fraction_b_dominated_by_a": 1.0,
+      "normalized_chamfer": 0.49107075509001713,
+      "normalized_hausdorff": 0.5070222995996622,
+      "seed_a": 42,
+      "seed_b": 43,
+      "time_interval_overlap": 0.0
+    },
+    {
+      "energy_interval_overlap": 0.0,
+      "fraction_a_dominated_by_b": 0.0,
+      "fraction_b_dominated_by_a": 1.0,
+      "normalized_chamfer": 1.2066856065750504,
+      "normalized_hausdorff": 1.3183740046793613,
+      "seed_a": 42,
+      "seed_b": 44,
+      "time_interval_overlap": 0.0
+    },
+    {
+      "energy_interval_overlap": 0.0,
+      "fraction_a_dominated_by_b": 0.0,
+      "fraction_b_dominated_by_a": 1.0,
+      "normalized_chamfer": 0.7045791370200944,
+      "normalized_hausdorff": 0.8121770138582673,
+      "seed_a": 43,
+      "seed_b": 44,
+      "time_interval_overlap": 0.0
+    }
+  ],
+  "pooled_objective_scale": {
+    "energy_range_J": 21.145762999999988,
+    "time_range_s": 17.030011999999914
+  },
+  "schema_version": 1,
+  "scientific_status": "NOT_VALIDATED",
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "stability_status": "REVIEW_REQUIRED"
+}

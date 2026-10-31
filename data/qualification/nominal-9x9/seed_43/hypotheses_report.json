@@ -1,0 +1,66 @@
+{
+  "version": "v3.2",
+  "config_frozen": true,
+  "hypotheses": [
+    {
+      "code": "B1",
+      "titre": "Masse opérationnelle de la plateforme",
+      "valeur": "0.383988 kg",
+      "statut": "GELÉE (v3.1)",
+      "source": "Recalibration masse surfacique (treillis ouvert, tube carbone Ø6.1 mm)",
+      "historique": [
+        "v3.0 : 0.385 kg (estimation grossière, sur-estimée)",
+        "v3.1 : 0.417 kg (calibrée sur charge réelle)"
+      ],
+      "plan_correction": "Peser la plateforme assemblée dès que le prototype est disponible ; si écart > 5 %, recalculer T_max et rejouer BLOC 3 et BLOC 6."
+    },
+    {
+      "code": "B2",
+      "titre": "Hauteur des plants (fenêtre de service)",
+      "valeur": "0.35 m",
+      "statut": "GELÉE (estimation externe)",
+      "source": "Fiches variétales haricot nain (Phaseolus vulgaris var. nana), médiane 30–50 cm",
+      "historique": [
+        "v3.0 : 0.30 m (implicite tomate, invalide)",
+        "v3.1 : 0.35 m (haricot nain, estimation médiane)"
+      ],
+      "plan_correction": "Mesurer à JAS 20, 30 et 40 dès que des plants réels sont disponibles. Si écart > 0.10 m, recalculer z_absolu_r0 et vérifier la marge vs z_max = 0.80 m."
+    },
+    {
+      "code": "B3",
+      "titre": "FOV caméra (paire unique)",
+      "valeur": "(62.2, 48.8)° (RGB uniquement)",
+      "statut": "GELÉE (simplifiée v3.0)",
+      "source": "Raspberry Pi Camera v2 — fiche technique",
+      "historique": [
+        "v2.0 : anticipation d'un canal thermique (non retenu)",
+        "v3.0 : canal thermique abandonné, RGB seul"
+      ],
+      "plan_correction": "Aucune action prévue : FOV intrinsèque au capteur, vérifiable à réception."
+    },
+    {
+      "code": "B4",
+      "titre": "Grille et effectif N",
+      "valeur": "N = 81 (grille 9×9, marge 0.375 m/bord)",
+      "statut": "GELÉE (validée WFW v3.1)",
+      "source": "Dérivation Annexe D de la Base d'architecture",
+      "historique": [
+        "v3.0 : N=81 (9×9, marge 0.25 m) — WFW rejetait 98.8 %",
+        "v3.1 : N=49 (7×7, marge 0.375 m) — WFW 100 % via BLOC 10"
+      ],
+      "plan_correction": "La validité de B4 a été confirmée par le test WFW exhaustif du BLOC 10 (re-vérification indépendante des 49 points). Aucune correction prévue."
+    },
+    {
+      "code": "B5",
+      "titre": "Offset R0 / sol (pied de support)",
+      "valeur": "0.2 m",
+      "statut": "GELÉE",
+      "source": "Confirmation physique : pied de 20 cm sous les 4 barres",
+      "historique": [
+        "v3.0 : 0.20 m, hypothèse de clairance non sourcée",
+        "v3.0 : 0.20 m, confirmée par le montage réel"
+      ],
+      "plan_correction": "Confirmation par schéma coté recommandée, non bloquante : le paramètre est isolé dans Config, toute correction reste localisée."
+    }
+  ]
+}

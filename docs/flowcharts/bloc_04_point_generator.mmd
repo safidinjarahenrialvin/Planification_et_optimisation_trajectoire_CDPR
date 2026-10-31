@@ -1,0 +1,10 @@
+flowchart TD
+ A["Début"] --> B[Recevoir Config]
+ B --> C[Construire les axes x et y]
+ C --> D[Construire la grille n_rangs × n_colonnes]
+ D --> E[Calculer z = z_absolu_r0]
+ E --> F[Attribuer id, ligne et colonne]
+ F --> G[Écrire points_generes.csv]
+ G --> H[Écrire points_generes_report.json]
+ H --> I[Retourner le DataFrame des points]
+ I --> J["Fin"]

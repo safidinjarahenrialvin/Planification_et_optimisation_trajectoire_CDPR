@@ -1,0 +1,186 @@
+{
+  "configuration_fingerprint_basis": {
+    "derived": {
+      "N": 81,
+      "z_absolu_r0_m": 0.4499999999999999,
+      "z_absolu_sol_m": 0.6499999999999999
+    },
+    "domains": {
+      "agronomy_vision": {
+        "fov_camera": [
+          62.2,
+          48.8
+        ],
+        "hauteur_plants": 0.35,
+        "offset_r0_sol": 0.2,
+        "z_absolu_r0_override": null,
+        "z_vol": 0.3
+      },
+      "geometry": {
+        "ancrages_A": [
+          [
+            -1.25,
+            1.25,
+            -1.25,
+            1.25,
+            -1.25,
+            1.25,
+            -1.25,
+            1.25
+          ],
+          [
+            1.25,
+            1.25,
+            -1.25,
+            -1.25,
+            1.25,
+            1.25,
+            -1.25,
+            -1.25
+          ],
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "attaches_B": [
+          [
+            -0.15,
+            0.15,
+            -0.15,
+            0.15,
+            -0.15,
+            0.15,
+            -0.15,
+            0.15
+          ],
+          [
+            0.12,
+            0.12,
+            -0.12,
+            -0.12,
+            0.12,
+            0.12,
+            -0.12,
+            -0.12
+          ],
+          [
+            0.025,
+            0.025,
+            0.025,
+            0.025,
+            -0.025,
+            -0.025,
+            -0.025,
+            -0.025
+          ]
+        ],
+        "esp_x": 0.1,
+        "esp_y": 0.06,
+        "n_colonnes": 9,
+        "n_rangs": 9,
+        "orientation_plateforme": "fixe",
+        "parcelle_x": 2.5,
+        "parcelle_y": 2.5
+      },
+      "kinematics": {
+        "T_acc": 1.5,
+        "T_dec": 1.5,
+        "T_stabilisation": 2.0,
+        "a_max": 0.03,
+        "v_max": 0.045
+      },
+      "mechanics": {
+        "T_max": 58.0,
+        "T_min": 1.0,
+        "masse_kg": 0.383988
+      },
+      "operational_limits": {
+        "x_max": 0.4,
+        "x_min": -0.4,
+        "y_max": 0.24,
+        "y_min": -0.24,
+        "z_max": 0.86,
+        "z_min": 0.0
+      },
+      "optimization_defaults": {
+        "nsga_n_gen": 1500,
+        "nsga_pop_size": 500,
+        "nsga_seed": 42
+      },
+      "other": {}
+    },
+    "units": {
+      "acceleration": "m/s²",
+      "angle": "deg",
+      "length": "m",
+      "mass": "kg",
+      "speed": "m/s",
+      "tension": "N",
+      "time": "s"
+    }
+  },
+  "runs": [
+    {
+      "error": null,
+      "min_energy_gain_pct": 28.05683278962118,
+      "min_time_gain_pct": 20.46752493002601,
+      "n_pareto_solutions": 2,
+      "n_points_filtered": 81,
+      "n_points_generated": 81,
+      "optimal_beats_baseline": true,
+      "run_dir": "data/qualification/nominal-9x9/seed_42",
+      "seed": 42,
+      "status": "COMPLETED",
+      "validation_status": "WARN"
+    },
+    {
+      "error": null,
+      "min_energy_gain_pct": 26.233663442844463,
+      "min_time_gain_pct": 18.551924300376328,
+      "n_pareto_solutions": 2,
+      "n_points_filtered": 81,
+      "n_points_generated": 81,
+      "optimal_beats_baseline": true,
+      "run_dir": "data/qualification/nominal-9x9/seed_43",
+      "seed": 43,
+      "status": "COMPLETED",
+      "validation_status": "WARN"
+    },
+    {
+      "error": null,
+      "min_energy_gain_pct": 22.982390145208978,
+      "min_time_gain_pct": 15.260274190653,
+      "n_pareto_solutions": 4,
+      "n_points_filtered": 81,
+      "n_points_generated": 81,
+      "optimal_beats_baseline": true,
+      "run_dir": "data/qualification/nominal-9x9/seed_44",
+      "seed": 44,
+      "status": "COMPLETED",
+      "validation_status": "WARN"
+    }
+  ],
+  "schema_version": 1,
+  "scientific_status": "NOT_VALIDATED",
+  "specification": {
+    "K": 10,
+    "n": 9,
+    "n_gen": 1500,
+    "platform": "300x240",
+    "pop_size": 500,
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "zero_loss": true
+  },
+  "status": "COMPLETED"
+}

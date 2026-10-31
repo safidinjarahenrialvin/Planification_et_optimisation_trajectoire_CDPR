@@ -1,0 +1,59 @@
+name: Nominal 9x9 qualification
+
+on:
+  workflow_dispatch:
+    inputs:
+      seeds:
+        description: "Seeds séparées par des espaces"
+        required: true
+        default: "42 43 44"
+        type: string
+      pop_size:
+        description: "Population NSGA-II"
+        required: true
+        default: "500"
+        type: string
+      n_gen:
+        description: "Nombre de générations NSGA-II"
+        required: true
+        default: "1500"
+        type: string
+
+concurrency:
+  group: nominal-qualification-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  qualification:
+    name: Campagne nominale 9x9
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Run nominal qualification campaign
+        run: |
+          set -euo pipefail
+          python scripts/qualify_nominal.py \
+            --output-dir data/qualification/nominal-9x9 \
+            --seeds ${{ inputs.seeds }} \
+            --pop-size ${{ inputs.pop_size }} \
+            --n-gen ${{ inputs.n_gen }}
+
+      - name: Upload qualification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qualification-nominal-9x9-${{ github.run_id }}
+          path: data/qualification/nominal-9x9/
+          if-no-files-found: error

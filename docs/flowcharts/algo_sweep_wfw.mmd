@@ -1,0 +1,17 @@
+flowchart TD
+ A["Début sweep"] --> B[Lire listes T_min,T_max et résolution]
+ B --> C[Construire grille spatiale]
+ C --> D[Construire paires valides T_min<T_max]
+ D --> E[Charger paires existantes si resume]
+ E --> F[Calculer masque global T_min=0,T_max=inf]
+ F --> G[Pour chaque paire non calculée]
+ G --> H[Test WFW sur la grille, éventuellement masquée]
+ H --> I[Extraire couverture, bbox, rayons et volumes]
+ I --> J[Ajouter la ligne au CSV]
+ J --> K{Toutes les paires ?}
+ K -- Non --> G
+ K -- Oui --> L{--plot ?}
+ L -- Oui --> M[Générer heatmap de couverture]
+ L -- Non --> N[Conserver CSV]
+ M --> O
+ N --> O["Fin"]

@@ -1,0 +1,36 @@
+{
+  "config_summary": {
+    "N": 81,
+    "n_rangs": 9,
+    "n_colonnes": 9,
+    "esp_x_m": 0.1,
+    "esp_y_m": 0.06,
+    "z_absolu_r0_m": 0.4499999999999999,
+    "z_vol_m": 0.3,
+    "fov_camera_deg": [
+      62.2,
+      48.8
+    ]
+  },
+  "grid_extent": {
+    "x_min": -0.4,
+    "x_max": 0.4,
+    "y_min": -0.24,
+    "y_max": 0.24,
+    "half_x_m": 0.4,
+    "half_y_m": 0.24
+  },
+  "fov_footprint": {
+    "W_h_m": 0.3619431400479951,
+    "W_v_m": 0.2721720708981494,
+    "W_h_cm": 36.19431400479951,
+    "W_v_cm": 27.217207089814938
+  },
+  "overlap": {
+    "x_cm": 26.194314004799512,
+    "y_cm": 21.217207089814938,
+    "covers_fully_x": true,
+    "covers_fully_y": true
+  },
+  "alerts": []
+}

@@ -1,0 +1,4 @@
+seed,run_dir,status,validation_status,n_points_generated,n_points_filtered,n_pareto_solutions,optimal_beats_baseline,min_time_gain_pct,min_energy_gain_pct,error
+42,data/qualification/nominal-9x9/seed_42,COMPLETED,WARN,81,81,2,True,20.46752493002601,28.05683278962118,
+43,data/qualification/nominal-9x9/seed_43,COMPLETED,WARN,81,81,2,True,18.551924300376328,26.233663442844463,
+44,data/qualification/nominal-9x9/seed_44,COMPLETED,WARN,81,81,4,True,15.260274190653,22.982390145208978,

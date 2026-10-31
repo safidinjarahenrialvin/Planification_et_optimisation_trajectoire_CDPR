@@ -1,0 +1,260 @@
+\clearpage
+% Numérotation romaine pour annexe et bibliographie
+\pagenumbering{roman}
+\setcounter{page}{11}
+
+\chapter*{Annexe A}
+\addcontentsline{toc}{chapter}{Annexe A}
+\thispagestyle{plain}
+\markboth{}{}
+% Numérotation des tableaux de l'annexe : A.1, A.2, …
+\setcounter{table}{0}
+\renewcommand{\thetable}{A.\arabic{table}}
+
+Cette annexe rassemble les données géométriques, matérielles et numériques qui complètent le Chapitre~III et permettent de reproduire le calcul.
+
+\section*{A.1 Géométrie et matériel de référence}
+
+\subsection*{A.1.1 Ancrages et attaches}
+
+Le tableau~A.1 donne les coordonnées des ancrages $\mathbf{A}_i$, exprimées dans le repère fixe $R_0$, et celles des attaches $\mathbf{b}_i$, exprimées dans le repère de la plateforme ($300 \times 240$~mm, orientation fixe $R = I$). Les câbles 1 à 4 sont les câbles hauts et les câbles 5 à 8 les câbles bas. Les câbles 2 à 4 et 6 à 8 sont numérotés par symétrie à partir des câbles 1 et 5.
+
+\begin{table}[H]
+\centering
+\caption{Coordonnées des ancrages $\mathbf{A}_i$ ($R_0$) et des attaches $\mathbf{b}_i$ (plateforme), en mètres}
+\label{tab:A1}
+\footnotesize
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+\textbf{Câble} & $\mathbf{A}_{ix}$ & $\mathbf{A}_{iy}$ & $\mathbf{A}_{iz}$ & $\mathbf{b}_{ix}$ & $\mathbf{b}_{iy}$ & $\mathbf{b}_{iz}$ \\
+\hline
+1 & $-1{,}25$ & $+1{,}25$ & $+1{,}00$ & $-0{,}150$ & $+0{,}120$ & $+0{,}025$ \\
+\hline
+2 & $+1{,}25$ & $+1{,}25$ & $+1{,}00$ & $+0{,}150$ & $+0{,}120$ & $+0{,}025$ \\
+\hline
+3 & $-1{,}25$ & $-1{,}25$ & $+1{,}00$ & $-0{,}150$ & $-0{,}120$ & $+0{,}025$ \\
+\hline
+4 & $+1{,}25$ & $-1{,}25$ & $+1{,}00$ & $+0{,}150$ & $-0{,}120$ & $+0{,}025$ \\
+\hline
+5 & $-1{,}25$ & $+1{,}25$ & $0{,}00$ & $-0{,}150$ & $+0{,}120$ & $-0{,}025$ \\
+\hline
+6 & $+1{,}25$ & $+1{,}25$ & $0{,}00$ & $+0{,}150$ & $+0{,}120$ & $-0{,}025$ \\
+\hline
+7 & $-1{,}25$ & $-1{,}25$ & $0{,}00$ & $-0{,}150$ & $-0{,}120$ & $-0{,}025$ \\
+\hline
+8 & $+1{,}25$ & $-1{,}25$ & $0{,}00$ & $+0{,}150$ & $-0{,}120$ & $-0{,}025$ \\
+\hline
+\end{tabular}
+\end{table}
+
+Pour une pose $\mathbf{p}$, l'attache exprimée dans $R_0$ vaut $\mathbf{B}_i(\mathbf{p}) = \mathbf{p} + \mathbf{b}_i$ et la longueur du câble est $l_i = \|\mathbf{A}_i - \mathbf{B}_i(\mathbf{p})\|$ (équation~III.1). À la position centrale $\mathbf{p} = (0\,;\, 0\,;\, 0{,}45)$~m, le câble~1 donne $l_1 = 1{,}662$~m, valeur reprise au tableau~III.4.
+
+\subsection*{A.1.2 Actionneurs et transmission}
+
+Le tableau~A.2 précise les composants qui interviennent dans la borne $T_{\max} = 58$~N du Chapitre~III.
+
+\begin{table}[H]
+\centering
+\caption{Spécifications matérielles}
+\label{tab:A2}
+\footnotesize
+\begin{tabular}{|p{3.6cm}|p{3.4cm}|p{5.2cm}|}
+\hline
+\textbf{Composant} & \textbf{Paramètre} & \textbf{Valeur} \\
+\hline
+Moteur pas à pas NEMA~17 & Couple de maintien & $0{,}40$ à $0{,}47$~N$\cdot$m \\
+\cline{2-3}
+ & Angle de pas & $1{,}8^\circ$ (200 pas/tour) \\
+\cline{2-3}
+ & Courant par phase & $1{,}5$ à $1{,}7$~A \\
+\hline
+Tambour & Diamètre / rayon & $80$~mm / $40$~mm \\
+\cline{2-3}
+ & Enroulement par tour & $0{,}2513$~m \\
+\hline
+Câble Dyneema & Diamètre & $4$~mm \\
+\cline{2-3}
+ & Module d'Young & $80$ à $120$~GPa \\
+\cline{2-3}
+ & Charge de rupture & $> 500$~N \\
+\hline
+Poulie & Type / rayon & articulée (type WZ~31) / $20$~mm \\
+\hline
+\end{tabular}
+\end{table}
+
+\paragraph{Justification de $T_{\max}$.}
+La tension qu'un actionneur peut exercer vaut $T = C / r$, où $C$ est le couple disponible au tambour et $r$ son rayon. Sur un tambour de $40$~mm et sans réduction, un couple de $0{,}47$~N$\cdot$m donne $T \approx 11{,}8$~N. La borne $T_{\max} = 58$~N retenue pour le calcul suppose donc une réduction d'environ $5{:}1$ entre le moteur et le tambour. Elle est utilisée comme borne supérieure de dimensionnement. Le calcul de référence n'en dépend pas : les tensions maximales obtenues ($4{,}395$~N) restent inférieures à la capacité du moteur en entraînement direct.
+
+Le rapport entre la charge de rupture du câble et $T_{\max}$ dépasse $8$, ce qui laisse une large marge de sécurité. Le modèle de câble reste idéal (inextensible, sans masse) : l'élasticité, la flèche et le frottement de poulie ne sont pas pris en compte (voir~A.7).
+
+\section*{A.2 Configuration du calcul et grille des points de vue}
+
+\subsection*{A.2.1 Commande de référence}
+
+Tous les résultats du Chapitre~III proviennent d'un seul calcul :
+\begin{verbatim}
+python scripts/run_pipeline.py --n 7 --zero-loss --pop-size 500 \
+    --n-gen 5000 --output-dir data/outputs_7x7_pop500_gen5000 --verbose
+\end{verbatim}
+
+Les options de la commande priment sur la configuration par défaut : la grille est de $7\times7$ ($N = 49$). La graine du générateur aléatoire est $42$, ce qui rend l'optimisation NSGA-II déterministe. Les fichiers produits (CSV et JSON) sont conservés dans l'archive du calcul et se régénèrent avec cette commande.
+
+\begin{table}[H]
+\centering
+\caption{Paramètres complémentaires du calcul}
+\label{tab:A3}
+\footnotesize
+\begin{tabular}{|l|p{4.0cm}|p{6.5cm}|}
+\hline
+\textbf{Famille} & \textbf{Paramètre} & \textbf{Valeur} \\
+\hline
+Mission & Hauteur de prise de vue & $0{,}45$~m dans $R_0$ ($z_{\mathrm{vol}} = 0{,}30$~m, plants $0{,}35$~m, offset sol $0{,}20$~m) \\
+\hline
+Mission & Stabilisation par point & $2$~s ($49 \times 2 = 98$~s au total) \\
+\hline
+Vision & Champ de vue de la caméra & $62{,}2^\circ \times 48{,}8^\circ$ \\
+\hline
+Cinématique & $a_{\max}$ & $0{,}030$~m/s$^2$ \\
+\hline
+Cinématique & $T_{\mathrm{acc}} / T_{\mathrm{dec}}$ (profil LSPB) & $1{,}5$~s / $1{,}5$~s \\
+\hline
+NSGA-II & Opérateurs & croisement OX, mutation par inversion \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection*{A.2.2 Grille des points de vue}
+
+Les $49$ points sont répartis uniformément dans le plan $z = 0{,}45$~m :
+\begin{equation*}
+x_k = -0{,}400 + k \times 0{,}1333~\text{m},
+\qquad
+y_m = -0{,}240 + m \times 0{,}0800~\text{m},
+\quad k, m \in \{0, \ldots, 6\}.
+\end{equation*}
+Le pas est donc de $0{,}1333$~m selon $X$ et de $0{,}0800$~m selon $Y$. Le point~$0$ est $(-0{,}400\,;\, -0{,}240\,;\, 0{,}450)$. Le centre (id~$24$), point de départ et de retour de la mission, est $(0\,;\, 0\,;\, 0{,}450)$. Le point~$48$ est $(+0{,}400\,;\, +0{,}240\,;\, 0{,}450)$.
+
+L'empreinte de la caméra à $0{,}45$~m est d'environ $0{,}3619 \times 0{,}2722$~m. Les recouvrements entre points voisins sont de $0{,}2286$~m en $X$ et $0{,}1922$~m en $Y$, ce qui assure une couverture complète. Les $49$ points sont tous retenus par le filtrage (aucun rejet, pour un seuil configuré de $15\,\%$).
+
+\section*{A.3 Hypothèses de modélisation}
+
+Cinq hypothèses ont été figées pour le calcul.
+
+\begin{table}[H]
+\centering
+\caption{Hypothèses B1 à B5}
+\label{tab:A4}
+\footnotesize
+\begin{tabular}{|c|p{3.8cm}|p{2.8cm}|p{4.5cm}|}
+\hline
+\textbf{Code} & \textbf{Hypothèse} & \textbf{Valeur} & \textbf{Statut} \\
+\hline
+B1 & Masse opérationnelle & $0{,}383988$~kg & Estimation calibrée ; à confirmer par pesée \\
+\hline
+B2 & Hauteur des plants & $0{,}35$~m & Estimation pour un haricot nain ; à mesurer \\
+\hline
+B3 & Champ de vue de la caméra & $62{,}2^\circ \times 48{,}8^\circ$ & Valeur constructeur \\
+\hline
+B4 & Grille et effectif & $7\times7$ ; $N = 49$ & Validée par le WFW sur les $49$ points \\
+\hline
+B5 & Offset sol / $R_0$ & $0{,}20$~m & Confirmé par le montage \\
+\hline
+\end{tabular}
+\end{table}
+
+\section*{A.4 Statistiques de la matrice de coûts}
+
+La matrice contient $49 \times 49 = 2401$ entrées. La diagonale est nulle, toutes les paires sont réalisables et les valeurs sont symétriques dans les tolérances du validateur.
+
+\begin{table}[H]
+\centering
+\caption{Statistiques (toutes paires ordonnées, diagonale incluse)}
+\label{tab:A5}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Statistique} & \textbf{Distance (m)} & \textbf{Temps (s)} & \textbf{Énergie (J)} \\
+\hline
+Minimum & $0{,}000$ & $0{,}000$ & $0{,}000$ \\
+\hline
+Médiane & $0{,}400$ & $10{,}389$ & $14{,}612$ \\
+\hline
+Moyenne & $0{,}391$ & $10{,}163$ & $15{,}431$ \\
+\hline
+Maximum & $0{,}933$ & $22{,}232$ & $49{,}240$ \\
+\hline
+\end{tabular}
+\end{table}
+
+Ces valeurs concernent des déplacements élémentaires entre deux points. Elles ne correspondent pas aux cumuls d'une trajectoire complète, qui dépendent de l'ordre de visite.
+
+\section*{A.5 Validation logicielle}
+
+Six contrôles sur sept sont réussis, un donne un avertissement et aucun n'échoue (tableau~A.6).
+
+\begin{table}[H]
+\centering
+\caption{Résultats de validation}
+\label{tab:A6}
+\footnotesize
+\begin{tabular}{|p{3.6cm}|c|p{7.2cm}|}
+\hline
+\textbf{Contrôle} & \textbf{Statut} & \textbf{Évidence} \\
+\hline
+Cohérence de la configuration & PASS & $N = 49$ ; $T \in [1\,;\, 58]$~N ; orientation fixe \\
+\hline
+Points filtrés & PASS & $49$ points ; aucun infaisable \\
+\hline
+Matrice de coûts & PASS & $2401$ entrées ; symétrie ; diagonale nulle \\
+\hline
+Solutions de Pareto & WARN & Une solution non dominée unique ; seuil recommandé $\geq 10$ \\
+\hline
+Trajectoires & PASS & $3$ types ; centre aux extrémités ; totaux cohérents \\
+\hline
+Profils cinématiques & PASS & $5361$ échantillons ; $\|\mathbf{v}\|_{\max} = 0{,}045$~m/s \\
+\hline
+Cohérence croisée & PASS & Profils, matrice et résumé concordants \\
+\hline
+\end{tabular}
+\end{table}
+
+\paragraph{Interprétation de l'avertissement.}
+Le fichier \texttt{solutions\_pareto.csv} contient deux ordres de visite distincts dont les objectifs sont rigoureusement identiques : ($177{,}295$~s ; $246{,}436$~J). Le validateur les compte comme une seule solution non dominée, d'où $n_{\mathrm{solutions}} = 1$. Il s'agit d'un doublon de représentation du même point objectif, et non d'une incohérence. L'avertissement signale seulement que le front est trop réduit pour étudier un compromis entre temps et énergie.
+
+\section*{A.6 Choix de modélisation}
+
+\paragraph{Convention de signe.}
+La direction unitaire est $\mathbf{U}_i = (\mathbf{A}_i - \mathbf{B}_i) / \|\mathbf{A}_i - \mathbf{B}_i\|$, orientée de l'attache vers l'ancrage, c'est-à-dire dans le sens physique de la traction. La matrice de structure $W$ assemble les vecteurs $[\mathbf{U}_i\,;\, \mathbf{B}_i \times \mathbf{U}_i]$. Cette convention évite d'obtenir des tensions positives qui correspondraient en réalité à une compression de la plateforme.
+
+\paragraph{Résolution des tensions en deux chemins.}
+À chaque sous-pas, une solution par pseudo-inverse est tentée en premier. Si elle sort de $[T_{\min}\,;\, T_{\max}]$, un solveur borné SLSQP, initialisé par la solution précédente, prend le relais. Le coût de calcul moyen est ainsi réduit sans perdre la robustesse dans les cas limites.
+
+\paragraph{Énergie au point milieu.}
+L'énergie de chaque sous-segment est évaluée en son point milieu, ce qui rend $E(i,j)$ et $E(j,i)$ symétriques par construction.
+
+\section*{A.7 Limites et protocole expérimental}
+
+\begin{table}[H]
+\centering
+\caption{Limites et actions associées}
+\label{tab:A7}
+\footnotesize
+\begin{tabular}{|p{3.8cm}|p{4.2cm}|p{4.5cm}|}
+\hline
+\textbf{Limite} & \textbf{Impact} & \textbf{Action} \\
+\hline
+Masse estimée (B1) & Influence le poids et les tensions & Peser la plateforme ; relancer le calcul si l'écart dépasse $5\,\%$ \\
+\hline
+$T_{\max} = 58$~N & Dépend du couple, de la réduction et du rayon du tambour & Vérifier la chaîne de transmission complète \\
+\hline
+Absence de vent et de perturbations & Efforts externes non modélisés & Ajouter des scénarios de charge et de replanification \\
+\hline
+Solution non dominée unique & Pas d'étude statistique du compromis & Répéter avec plusieurs graines \\
+\hline
+Câble idéal & Élasticité, flèche et frottement négligés & Valider par mesure des tensions \\
+\hline
+Stabilisation constante ($2$~s) & Indépendante du mouvement et des vibrations & Mesurer le temps réel sur prototype \\
+\hline
+\end{tabular}
+\end{table}
+

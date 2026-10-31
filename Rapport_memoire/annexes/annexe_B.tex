@@ -1,0 +1,245 @@
+\clearpage
+
+\chapter*{Annexe}
+\addcontentsline{toc}{chapter}{Annexe}
+\thispagestyle{plain}
+\markboth{}{}
+
+\renewcommand{\lstlistingname}{Listing}
+\setcounter{lstlisting}{0}
+\renewcommand{\thelstlisting}{\arabic{lstlisting}}
+\captionsetup[lstlisting]{labelsep=space}
+
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape\color{gray},
+  stringstyle=\color{black},
+  showstringspaces=false,
+  breaklines=true,
+  breakatwhitespace=true,
+  frame=single,
+  framesep=3pt,
+  xleftmargin=0.4em,
+  xrightmargin=0.4em,
+  aboveskip=0.4em,
+  belowskip=0.4em,
+  columns=fullflexible,
+  keepspaces=true,
+  tabsize=4,
+  literate=
+    {é}{{\'e}}1 {è}{{\`e}}1 {ê}{{\^e}}1 {à}{{\`a}}1
+    {ù}{{\`u}}1 {ç}{{\c{c}}}1 {ô}{{\^o}}1
+}
+
+\vspace{-0.5em}
+Cette annexe présente les extraits de code qui correspondent aux algorithmes décrits au Chapitre~III. Seuls les traitements algorithmiques sont reproduits ; les fonctions de lecture, de journalisation et de sauvegarde sont omises. Le code complet est accessible sur le dépôt indiqué en section~5.
+
+\section*{1 Paramétrage et génération de la grille}
+\vspace{-0.3em}
+Cette partie décrit le passage des paramètres géométriques à la liste structurée des points de prise de vue.
+
+\paragraph{Principe.}
+La configuration est la source unique des dimensions de la grille et des limites opérationnelles. Pour une grille centrée, les coordonnées sont calculées symétriquement autour de l'origine. Chaque point reçoit ensuite un identifiant déterministe selon la relation $\mathrm{id} = \mathrm{ligne} \times n_{\mathrm{colonnes}} + \mathrm{colonne}$, où la ligne repère la position en $Y$ et la colonne la position en $X$. Cette convention est identique à celle utilisée par les blocs de filtrage et de calcul de coûts en aval.
+
+\begin{lstlisting}[caption={Construction deterministe des coordonnees et des identifiants des points},label={lst:B1}]
+# Extrait adapte de src/config.py et src/point_generator.py
+@dataclass(frozen=True)
+class Config:
+    # Valeurs du calcul de reference (Chapitre III)
+    n_rangs: int = 7            # 9 par defaut dans le depot
+    n_colonnes: int = 7         # 9 par defaut dans le depot
+    esp_x: float = 0.1333       # 0.20 par defaut dans le depot
+    esp_y: float = 0.0800       # 0.20 par defaut dans le depot
+    x_min: float = -0.40
+    x_max: float = +0.40
+    y_min: float = -0.24
+    y_max: float = +0.24
+
+def _grid_coordinates(self, origin="centre"):
+    cx, cy = (0.0, 0.0) if origin == "centre" else origin
+    hx = (self.config.n_colonnes - 1) / 2 * self.config.esp_x
+    hy = (self.config.n_rangs - 1) / 2 * self.config.esp_y
+    xs = np.linspace(cx - hx, cx + hx, self.config.n_colonnes)
+    ys = np.linspace(cy - hy, cy + hy, self.config.n_rangs)
+    return xs, ys
+
+def generate(self, origin="centre"):
+    xs, ys = self._grid_coordinates(origin)
+    rows = []
+    for i, y in enumerate(ys):
+        for j, x in enumerate(xs):
+            rows.append({"id": i*self.config.n_colonnes + j,
+                         "x": float(x), "y": float(y),
+                         "z": float(self.config.z_absolu_r0),
+                         "ligne": i, "colonne": j})
+    df = pd.DataFrame(rows)
+    self._verify_extent(df)
+    return df
+\end{lstlisting}
+
+\paragraph{Convention de numérotation.}
+L'identifiant suit la relation $\mathrm{id} = \mathrm{ligne} \times 7 + \mathrm{colonne}$ :
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item $\mathrm{id} = 0$ correspond à (ligne~$0$, colonne~$0$), soit $(x = -0{,}400\,;\, y = -0{,}240)$.
+\item $\mathrm{id} = 24$ correspond à (ligne~$3$, colonne~$3$), soit le centre $(x = 0\,;\, y = 0)$.
+\item $\mathrm{id} = 48$ correspond à (ligne~$6$, colonne~$6$), soit $(x = +0{,}400\,;\, y = +0{,}240)$.
+\end{itemize}
+Un contrôle d'étendue est effectué après la génération afin de détecter toute incohérence entre les paramètres de grille et les bornes opérationnelles. Le tableau obtenu constitue l'entrée du bloc de filtrage.
+
+\section*{2 Vérification de la faisabilité mécanique par le WFW}
+\vspace{-0.3em}
+Le WFW (Wrench-Feasible Workspace) décide si une pose admet une distribution de tensions compatible avec l'équilibre statique du robot. La même fonction sert au filtrage et à la validation, afin d'éviter deux définitions concurrentes de la faisabilité.
+
+\paragraph{Formulation.}
+Pour une pose $\mathbf{p}$, la matrice de structure $\mathbf{W}(\mathbf{p})$ relie les tensions des huit câbles au torseur extérieur. Le programme résout un problème de faisabilité linéaire sous contraintes d'équilibre et de bornes de tension (équation~III.4) : $\mathbf{W}(\mathbf{p})\,\mathbf{T} = \mathbf{rhs}$, avec $T_{\min} \leq T_i \leq T_{\max}$. Une solution n'est retenue que si le résidu numérique reste inférieur à la tolérance de $10^{-6}$.
+
+\begin{lstlisting}[caption={Test de faisabilite d'une pose par programmation lineaire},label={lst:B2}]
+# Extrait adapte de src/wfw.py
+class WFW:
+    def __init__(self, robot, config):
+        self.robot = robot
+        self.config = config
+        self._rhs = np.array([0., 0., config.masse_kg*9.81,
+                              0., 0., 0.])
+        self._bounds = [(config.T_min, config.T_max)] * 8
+
+    def is_feasible(self, p):
+        W = self.robot.structure_matrix(p)
+        if np.linalg.matrix_rank(W) < 6:
+            return WFWSolution(False, None, np.nan, -1,
+                               "matrice W singuliere")
+        res = linprog(np.zeros(8), A_eq=W, b_eq=self._rhs,
+                      bounds=self._bounds, method="highs")
+        if res.status == 0 and res.x is not None:
+            T = np.asarray(res.x, dtype=float)
+            residual = float(np.linalg.norm(W @ T - self._rhs))
+            if residual <= 1e-6:
+                return WFWSolution(True, T, residual, 0,
+                                   str(res.message))
+        return WFWSolution(False, None, np.nan, int(res.status),
+                           str(res.message))
+\end{lstlisting}
+
+Le test de rang préalable (\texttt{matrix\_rank(W) < 6}) traite explicitement le cas des plateformes carrées, pour lesquelles la sixième ligne de $\mathbf{W}$ est nulle (la section sur le choix de modélisation). La fonction renvoie une décision booléenne, les tensions lorsque la pose est faisable, le résidu d'équilibre et le statut du solveur. Cette structure permet de distinguer une pose atteignable d'une pose rejetée et de conserver la cause du rejet dans les rapports JSON.
+
+\section*{3 Calcul du temps et de l'énergie de déplacement}
+\vspace{-0.3em}
+Le bloc de calcul des coûts transforme les points retenus en une matrice de transitions. Chaque paire de points reçoit une distance, un temps de déplacement, une énergie et un indicateur de faisabilité. Cette matrice alimente l'optimisation des tournées.
+
+\paragraph{Temps LSPB et énergie par sous-pas.}
+Le temps suit un profil LSPB : trapézoïdal lorsque la distance permet d'atteindre la vitesse maximale, triangulaire dans le cas contraire (équations~III.13 et~III.14). L'énergie est intégrée sur $K$ sous-pas :
+\[
+E(i,j) = \sum_{k=1}^{K} \sum_{a=1}^{8} T_a(k) \cdot |\Delta L_a(k)|
+\]
+où $T_a(k)$ est la tension du câble $a$ au milieu du sous-segment $k$ et $\Delta L_a(k)$ la variation de longueur de ce câble sur le sous-segment. Évaluer les tensions aux points milieux préserve la symétrie entre les deux sens de déplacement. La fonction \texttt{\_solve\_tension} applique la résolution en deux chemins décrite en la section sur le choix de modélisation.
+
+\begin{lstlisting}[caption={Calcul du temps LSPB et integration quasi-statique de l'energie},label={lst:B3}]
+# Extrait adapte de src/cost_calculator.py
+def lspb_time(self, distance):
+    if distance <= 0.0:
+        return 0.0
+    vmax, amax = self.config.v_max, self.config.a_max
+    d_acc = vmax*vmax/(2*amax)
+    if distance >= 2*d_acc:
+        return 2*vmax/amax + (distance - 2*d_acc)/vmax
+    v_peak = np.sqrt(distance*amax)
+    return 2*v_peak/amax
+
+def _segment_energy(self, p_i, p_j, K=10):
+    alphas = np.linspace(0., 1., K+1)
+    poses = np.array([p_i + a*(p_j - p_i) for a in alphas])
+    lengths = np.array([self.robot.cable_lengths(p) for p in poses])
+    dL = np.diff(lengths, axis=0)
+    mids = (np.arange(K) + 0.5)/K
+    energy, T_prev = 0.0, None
+    for k, alpha in enumerate(mids):
+        p = p_i + alpha*(p_j - p_i)
+        T, ok = self._solve_tension(
+            self.robot.structure_matrix(p), T0=T_prev)
+        if not ok or T is None:
+            return np.nan, False
+        energy += float(np.sum(T*np.abs(dL[k])))
+        T_prev = T
+    return energy, True
+\end{lstlisting}
+
+L'énergie d'une transition dépend ainsi de la géométrie du robot, de la variation des longueurs de câbles et de la distribution de tensions admissible. Une liaison dont un sous-pas est infaisable est marquée comme infaisable dans la matrice.
+
+\section*{4 Optimisation multiobjectif par NSGA-II}
+\vspace{-0.3em}
+Le bloc d'optimisation recherche les tournées qui minimisent simultanément le temps de déplacement et l'énergie. Une tournée est codée comme une permutation des $48$ points non centraux (équation~III.11) ; le centre est imposé au départ et au retour.
+
+\paragraph{Reindexation du centre.}
+Dans les matrices internes du problème NSGA-II, le centre est réindexé en position~$0$, quelle que soit sa position dans la grille d'origine (id~$24$ pour la grille $7\times7$). Les gènes $0$ à $47$ désignent alors les positions $1$ à $48$. Cette reindexation est effectuée par le décodage $[0,\, x{+}1,\, 0]$ : les valeurs $0$ aux extrémités correspondent au centre, et les gènes incrémentés de~$1$ correspondent aux points non centraux.
+
+\paragraph{Évaluation d'un chromosome.}
+Une solution contenant une liaison infaisable reçoit une pénalité élevée sur les deux objectifs. Les solutions faisables sont évaluées à partir de la matrice de coûts (équation~III.12), puis un post-filtrage strict élimine les solutions dominées à tolérance numérique près.
+
+\begin{lstlisting}[caption={Codage d'une tournee et evaluation multiobjectif par NSGA-II},label={lst:B4}]
+# Extrait adapte de src/optimizer.py
+class TourProblem(Problem):
+    def _decode_positions(self, x):
+        x = np.asarray(x, dtype=int)
+        # 0 aux extremites = centre ; x+1 = positions 1..n
+        return np.concatenate([[0], x + 1, [0]])
+
+    def _evaluate(self, X, out, *args, **kwargs):
+        F = np.zeros((len(X), 2), dtype=float)
+        for k, chromosome in enumerate(X):
+            pos = self._decode_positions(chromosome)
+            i, j = pos[:-1], pos[1:]
+            feasible = self.feasible_mat[i, j]
+            if feasible.all():
+                F[k, 0] = self.time_mat[i, j].sum()
+                F[k, 1] = self.energy_mat[i, j].sum()
+            else:
+                penalty = 1e6 * (1 + int((~feasible).sum()))
+                F[k, :] = penalty
+        out["F"] = F
+
+algorithm = NSGA2(
+    pop_size=pop_size,
+    sampling=PermutationRandomSampling(),
+    crossover=OrderCrossover(),
+    mutation=InversionMutation(),
+    eliminate_duplicates=True)
+res = minimize(problem, algorithm, ("n_gen", n_gen),
+               seed=seed, verbose=False)
+\end{lstlisting}
+
+Le front de Pareto rassemble les solutions non dominées selon les deux critères. Pour le calcul de référence, la taille de population ($500$ individus), le nombre de générations ($5000$) et la graine ($42$) sont fixés explicitement afin de garantir la reproductibilité.
+
+\clearpage\section*{5 Enchaînement du pipeline et production des résultats}
+\vspace{-0.3em}
+Le script d'exécution assemble les blocs précédents. L'extrait ci-dessous résume l'ordre de traitement. Il omet l'analyse de la ligne de commande (dont l'option \texttt{--zero-loss}), la journalisation et la sauvegarde détaillée.
+
+\begin{lstlisting}[caption={Sequence generale d'execution du pipeline Tandem},label={lst:5}]
+# Extrait synthetique de scripts/run_pipeline.py
+config = Config.with_n(7)
+robot = RobotModel(config)
+wfw = WFW(robot, config)
+# Bloc 4 : generation des points
+points = PointGenerator(config).generate()
+# Bloc 5 : conservation des poses atteignables
+filtered = PointFilter(config, wfw).filter(points)
+df_points = filtered.points_retenus
+# Bloc 6 : matrice des couts entre points retenus
+costs = CostCalculator(config, robot).build_matrix(
+    df_points, K=10)
+# Bloc 7 : optimisation multiobjectif
+solutions, result = Optimizer(
+    config, df_points, costs).run(
+        pop_size=500, n_gen=5000, seed=42)
+# Bloc 8 : selection et reconstruction des trajectoires
+extracted = TrajectoryExtractor(
+    config, df_points, costs, solutions).run()\end{lstlisting}
+
+\vspace{-1.0em}
+\begin{samepage}
+\noindent Dépôt du projet Tandem : \url{https://github.com/safidinjarahenrialvin/tandem_sp2}
+\hfill\includegraphics[width=1.5cm]{figures/qrcode_tandem_sp2.png}
+
+\noindent Ces extraits mettent en évidence les choix algorithmiques essentiels : génération déterministe de la grille, faisabilité mécanique par programmation linéaire, calcul énergétique sous contraintes et optimisation multiobjectif. Les détails répétitifs de formatage et d'export sont volontairement exclus.
+\end{samepage}

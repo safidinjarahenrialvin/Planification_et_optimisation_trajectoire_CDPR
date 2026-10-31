@@ -1,0 +1,145 @@
+\chapter*{CADRAGE DU PROJET}
+\addcontentsline{toc}{chapter}{Cadrage du projet}
+\thispagestyle{plain}
+
+\section*{1. Contexte général}
+
+Le suivi du stress hydrique en milieu agricole fait face aujourd'hui à une limite pratique : les méthodes d'observation restent essentiellement manuelles et ponctuelles. Automatiser cette tâche à l'aide d'un système robotique capable de survoler une parcelle de façon répétable constitue donc une réponse directe à ce besoin.
+
+Les robots parallèles à câbles (CDPR) répondent particulièrement bien à cette contrainte grâce à un espace de travail étendu, une structure légère et peu coûteuse, ainsi qu'une géométrie facilement reconfigurable. C'est ce triple avantage (coût, portée et adaptabilité) qui a orienté le choix technologique du projet Tandem.
+
+\section*{2. Présentation du projet Tandem}
+
+\subsection*{a) Objectif général}
+
+Le projet Tandem consiste à mettre en œuvre un robot à câbles suspendu au-dessus d'une parcelle agricole, chargé d'acquérir automatiquement des images des plants pour en évaluer l'état hydrique. Sa réalisation repose sur l'articulation de trois compétences complémentaires : mécanique, planification de déplacement et traitement d'image, chacune confiée à un sous-projet distinct.
+
+\subsection*{b) Structuration en trois sous-projets}
+
+Le projet Tandem est structuré en trois sous-projets distincts, réalisés dans le cadre de projets de fin d'année au sein de l'ESP :
+
+\begin{table}[H]
+\centering
+\caption{Structuration du projet Tandem en sous-projets}
+\label{tab:sousprojets}
+\begin{tabular}{|c|l|>{\raggedright\arraybackslash}p{7.5cm}|}
+\hline
+\textbf{Sous-projet} & \textbf{Discipline} & \textbf{Objectif principal} \\
+\hline
+\textbf{SP1} & Génie mécanique & Concevoir, modéliser et caractériser le système mécanique du robot à câbles. \\
+\hline
+\textbf{SP2} & Robotique STIC & Planifier et optimiser les trajectoires du robot pour l'acquisition d'images. \\
+\hline
+\textbf{SP3} & Vision -- STIC & Développer une méthode d'analyse d'images pour détecter le stress hydrique des plantes. \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection*{c) Partenaires et cadre institutionnel}
+
+Le projet est porté par l'École Supérieure Polytechnique d'Antsiranana (ESP), en collaboration avec l'ENIM de Metz. Cette coopération s'inscrit dans le programme « Projets Tandem » de Diasporeines Africa, dont l'objectif est de renforcer les échanges scientifiques entre les deux établissements.
+
+\section*{3. Positionnement du sous-projet SP2}
+
+\subsection*{a) Objectifs du SP2}
+
+Le sous-projet SP2 a pour objectif principal de \textbf{concevoir et optimiser les trajectoires} d'un robot à câbles suspendu afin de couvrir efficacement une parcelle agricole, tout en minimisant le temps de parcours et la consommation énergétique.
+
+La problématique associée est la suivante : comment définir des trajectoires optimales pour un robot à câbles en tenant compte des contraintes mécaniques, de la visibilité des plantes et du compromis entre couverture, précision et efficacité énergétique ?
+
+Cet objectif se décompose en quatre sous-objectifs opérationnels :
+\begin{itemize}
+\item \textbf{Modélisation de l'environnement} : représenter la parcelle et les points d'intérêt sous une forme exploitable par un algorithme de planification.
+\item \textbf{Génération de trajectoires} : produire des chemins couvrant l'ensemble des points de vue, selon différentes stratégies.
+\item \textbf{Prise en compte des contraintes} : intégrer les limites mécaniques du robot et les contraintes de visibilité.
+\item \textbf{Optimisation} : déterminer l'ordre de visite et les paramètres de déplacement minimisant simultanément le temps et l'énergie.
+\end{itemize}
+
+\subsection*{b) Livrables attendus}
+
+Les résultats attendus du sous-projet SP2 sont :
+\begin{itemize}
+\item Des trajectoires optimisées, prêtes à être exécutées par le robot.
+\item Une simulation fonctionnelle permettant de tester et comparer les solutions avant tout déploiement réel.
+\item Une comparaison entre plusieurs stratégies de déplacement.
+\end{itemize}
+
+\subsection*{c) Place du SP2 dans le projet Tandem}
+
+Le sous-projet SP2 est positionné comme l'élément intermédiaire entre le Sous-Projet 1 (conception mécanique du robot) et le Sous-Projet 3 (acquisition et analyse d'images).
+
+\paragraph{Interface avec le SP1 (Génie mécanique).}
+Le SP1 fournit au SP2 l'ensemble des données géométriques et mécaniques du robot : coordonnées des points d'ancrage et d'attache, masse de la plateforme, bornes de tension admissibles, limites opérationnelles de l'espace de travail, caractéristiques du système d'enroulement. Le SP2 utilise ces données pour construire le modèle géométrique du robot, tester la faisabilité mécanique des poses et calculer les coûts de déplacement.
+
+\paragraph{Interface avec le SP3 (Vision -- STIC).}
+Le SP2 fournit au SP3 une plateforme stabilisée au moment de la prise de vue : coordonnées des points de vue à visiter, profil de vitesse garantissant un arrêt complet avant chaque photo, séquence de déclenchement de la caméra. En retour, le SP3 transmet au SP2 les spécifications de la caméra (champ de vision, résolution), la hauteur de vol requise et le protocole de prise de vue.
+
+\paragraph{Synthèse des interfaces.}
+
+\begin{table}[H]
+\centering
+\caption{Synthèse des interfaces entre sous-projets}
+\label{tab:interfaces}
+\begin{tabular}{|c|>{\raggedright\arraybackslash}p{6.2cm}|c|}
+\hline
+\textbf{Direction} & \textbf{Donnée échangée} & \textbf{Type} \\
+\hline
+SP1 $\rightarrow$ SP2 & Géométrie (ancrages, attaches) & Entrée \\
+\hline
+SP1 $\rightarrow$ SP2 & Masse, bornes de tension & Entrée \\
+\hline
+SP1 $\rightarrow$ SP2 & Limites opérationnelles & Entrée \\
+\hline
+SP2 $\rightarrow$ SP3 & Points de vue et trajectoires & Sortie \\
+\hline
+SP2 $\rightarrow$ SP3 & Profils de vitesse (arrêt/stabilisation) & Sortie \\
+\hline
+SP3 $\rightarrow$ SP2 & Spécifications caméra (FOV, hauteur) & Entrée \\
+\hline
+SP3 $\rightarrow$ SP2 & Protocole de prise de vue & Entrée \\
+\hline
+\end{tabular}
+\end{table}
+
+Cette organisation en cascade (SP1 $\rightarrow$ SP2 $\rightarrow$ SP3) assure la cohérence de l'ensemble du projet Tandem : la conception mécanique conditionne la planification, qui conditionne aussi l'acquisition et l'analyse d'images.
+
+\section*{4. Contraintes du projet}
+
+Le projet s'inscrit dans un contexte \textbf{low-cost} et \textbf{durable}, adapté aux conditions de Madagascar (Diego-Suarez). Ces contraintes ne sont pas indépendantes : elles s'enchaînent logiquement, chaque niveau conditionnant le suivant. Par exemple, la taille des plants impose une hauteur de vol précise, qui influence à son tour les limites mécaniques et cinématiques du robot.
+
+\begin{table}[H]
+\centering
+\caption{Contraintes du projet et conséquences sur le robot}
+\label{tab:contraintes}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{4.2cm}|>{\raggedright\arraybackslash}p{6.0cm}|}
+\hline
+\textbf{Type de contrainte} & \textbf{Origine} & \textbf{Conséquence sur le robot} \\
+\hline
+\textbf{Économique et matérielle} & Contexte low-cost, composants disponibles localement & Choix limité aux actionneurs, câbles et capteurs standards, peu coûteux. \\
+\hline
+\textbf{Agronomique} & Hauteur des plantes et champ de vision de la caméra & Vol imposé à environ 30~cm au-dessus des plantes. \\
+\hline
+\textbf{Mécanique} & Le robot est un CDPR à 8 câbles, pleinement contraint mais planifié en translation pure & Chaque câble ne travaille qu'en traction : la tension doit rester strictement positive et bornée à tout instant. \\
+\hline
+\textbf{Cinématique} & Capacité des moteurs et stabilité de la plateforme & Vitesse et accélération limitées ; arrêt complet obligatoire à chaque point de prise de vue pour éviter le flou. \\
+\hline
+\textbf{Robustesse} & Environnement extérieur (vent, perturbations) & Marge de sécurité nécessaire sur la tension pour éviter que les câbles ne se détendent. \\
+\hline
+\end{tabular}
+\end{table}
+
+En résumé, ces contraintes forment une chaîne cohérente : le contexte agronomique fixe l'altitude de vol, cette altitude impose des limites cinématiques, et ces limites doivent être respectées tout en garantissant la robustesse mécanique du système face aux perturbations extérieures.
+
+\section*{5. Organisation du mémoire}
+
+Ce mémoire s'organise en trois chapitres principaux, qui suivent la logique du travail réalisé : comprendre les outils théoriques, choisir une méthode, puis l'appliquer au cas concret du robot Tandem.
+\begin{itemize}
+\item \textbf{Chapitre 1 : Cadre théorique des robots parallèles à câbles.} Ce chapitre pose les bases nécessaires à la compréhension du reste du mémoire : principes fondamentaux des CDPR, modèles géométriques, contraintes de tension et espaces de travail. Il permet de comprendre les limites physiques que devra respecter toute trajectoire proposée par la suite.
+\item \textbf{Chapitre 2 : Planification et optimisation des trajectoires.} À partir des bases théoriques posées au chapitre 1, ce chapitre présente un état de l'art des méthodes de génération de chemin, de lissage de trajectoire et d'optimisation multi-objectif. Il permet de justifier le choix des méthodes retenues pour le robot Tandem.
+\item \textbf{Chapitre 3 : Étude du robot Tandem.} Ce dernier chapitre applique les concepts théoriques et méthodologiques des chapitres précédents au cas spécifique du robot Tandem : architecture retenue, implémentation, résultats de simulation et perspectives d'amélioration.
+\end{itemize}
+
+
+% ============================================================
+% CHAPITRE 1
+% ============================================================

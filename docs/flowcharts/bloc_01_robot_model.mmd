@@ -1,0 +1,11 @@
+flowchart TD
+ A["Début"] --> B[Recevoir Config]
+ B --> C[Construire les huit ancrages A]
+ C --> D[Construire les huit attaches locales B]
+ D --> E[Définir la masse et la plateforme]
+ E --> F[Préparer les repères et paramètres géométriques]
+ F --> G{Géométrie cohérente ?}
+ G -- Non --> X[Erreur géométrique]
+ G -- Oui --> H[Exposer attach_positions, cable_lengths et structure_matrix]
+ H --> I[Transmettre le modèle à la cinématique et au WFW]
+ I --> J["Fin"]
