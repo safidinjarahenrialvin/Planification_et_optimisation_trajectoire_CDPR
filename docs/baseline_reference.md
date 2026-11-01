@@ -4,7 +4,14 @@
 
 Ce document conserve les mesures historiques du projet avant le début du
 développement GUI. Il sert de référence documentaire de non-régression; aucun
-snapshot correspondant n’est fourni par défaut dans le dépôt.
+snapshot correspondant n'est fourni par défaut dans le dépôt.
+
+Pour les résultats scientifiques utilisés dans le mémoire et dans la rédaction
+de la partie 3, la référence prioritaire est désormais
+`docs/REFERENCE_RESULTATS_MEMOIRE_CHAPITRE3.md`. Le présent document conserve
+une fonction technique distincte : il décrit le smoke test rapide utilisé pour
+détecter les régressions du pipeline et ne remplace pas les campagnes étudiées
+dans le chapitre 3.
 
 ## Environnement
 

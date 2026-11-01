@@ -1,319 +1,363 @@
-\chapter{ÉTUDE DU ROBOT TANDEM}
+\chapter{ÉTUDE, MISE EN ŒUVRE ET ÉVALUATION DU ROBOT TANDEM}
+\label{chap:etude_tandem}
 
-Ce chapitre applique au robot Tandem les concepts théoriques des chapitres précédents. Il présente l'architecture du robot et ses contraintes mécaniques, puis la chaîne de traitement en quatre macro-blocs. Il détaille ensuite la campagne de tests qui dimensionne l'algorithme NSGA-II, avant d'exposer les résultats sur deux tailles de grille et l'effet de la couverture de la zone de travail sur le temps et l'énergie.
+Les deux premiers chapitres ont présenté, d'une part, les principes mécaniques des robots parallèles à câbles et, d'autre part, les méthodes de planification et d'optimisation de trajectoire. Le présent chapitre applique ces connaissances au robot Tandem étudié dans le cadre du sous-projet SP2.
 
-\section{Architecture et modélisation du robot Tandem}
+L'objectif n'est plus seulement de décrire un modèle théorique, mais de montrer comment un système concret peut produire une trajectoire de prise de vue exploitable. La démarche suivie relie donc trois niveaux complémentaires. Le premier niveau est matériel : il concerne la plateforme, les câbles, les moteurs, la charge utile et les capteurs. Le deuxième niveau est algorithmique : il transforme les paramètres du robot en points de vue, en coûts de déplacement et en ordres de visite. Le troisième niveau est expérimental : il vérifie la faisabilité des trajectoires et mesure les gains obtenus par rapport à une stratégie de référence.
 
-\subsection{Présentation du robot et de la charge utile}
+Le chapitre est organisé en quatre parties. La première présente l'architecture matérielle du robot Tandem. La deuxième explique le fonctionnement séquentiel d'une mission d'acquisition. La troisième décrit l'architecture logicielle développée en Python et les quatre blocs de traitement. La dernière partie présente le protocole d'étude, les résultats obtenus, leur discussion et les perspectives.
 
-Le robot Tandem est un robot parallèle à câbles (CDPR) à 8 câbles, pleinement contraint en statique : il dispose de 6 degrés de liberté (3 forces et 3 moments). La trajectoire est planifiée en translation pure et l'orientation de la plateforme reste fixe ($\mathbf{R}=\mathbf{I}$). Selon la classification du chapitre~I, le robot est redondant :
-\begin{itemize}
-\item en 6~DDL : $m = 8 > n+1 = 7$ ;
-\item en 3~DDL de translation : $m = 8 > n+1 = 4$.
-\end{itemize}
-Cette redondance de deux câbles offre plusieurs distributions de tension pour une même pose et aide à maintenir des tensions positives. Elle ne garantit pas à elle seule l'existence d'une solution mécanique : la faisabilité doit être vérifiée à chaque position, sous contraintes.
+\section{Architecture matérielle du robot Tandem}
+\label{sec:architecture_materielle}
+
+\subsection{Contexte et rôle du robot}
+
+Le projet Tandem s'inscrit dans le domaine de l'agriculture de précision. Il vise à acquérir automatiquement des images de plants de haricot nain afin de contribuer au suivi de leur état et, à terme, à l'étude du stress hydrique. Dans cette application, la caméra doit être déplacée au-dessus d'une parcelle suivant un ensemble de positions prédéfinies.
+
+Le robot utilisé est un robot parallèle à câbles suspendu, ou CDPR, composé de huit câbles. Sa plateforme mobile porte la caméra et les éléments électroniques nécessaires à l'acquisition. Contrairement à un robot roulant, elle ne se déplace pas au contact du sol. Elle est positionnée dans l'espace par l'action coordonnée des câbles reliés à une structure fixe.
+
+Le sous-projet SP2 se situe entre les autres volets du projet Tandem. Le SP1 fournit la géométrie et les caractéristiques mécaniques du robot. Le SP2 détermine les points accessibles et calcule les trajectoires de déplacement. Le SP3 exploite ensuite les images acquises pour analyser les plants. La qualité de la planification influence donc directement la couverture de la parcelle, la durée de la mission et la régularité des prises de vue.
+
+\subsection{Organisation générale du système matériel}
+
+L'architecture matérielle regroupe une structure porteuse, des points d'ancrage fixes, des moteurs, des enrouleurs, huit câbles, une plateforme mobile et une charge utile. Les câbles supérieurs sont reliés à des ancrages situés à $z=1{,}00$~m, tandis que les câbles inférieurs sont reliés à des ancrages situés à $z=0$~m. La plateforme est placée à une hauteur de référence de $z=0{,}45$~m dans le repère fixe.
+
+Chaque moteur agit sur un enrouleur. Lorsque l'enrouleur tourne, la longueur active du câble varie. Le mouvement de la plateforme résulte de la combinaison des huit variations de longueur. Une seule variation ne suffit donc pas à définir le déplacement : les moteurs doivent fonctionner de manière coordonnée afin de déplacer la plateforme vers la pose demandée tout en maintenant les câbles dans leur domaine de fonctionnement.
+
+Le fonctionnement global peut être représenté par la chaîne suivante :
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.92\textwidth,height=0.55\textheight,keepaspectratio]{robot_tandem_fig.png}
-\caption{Robot Tandem}
-\label{fig:robot_tandem}
+\begin{minipage}{0.92\textwidth}
+\centering
+\fbox{\parbox{0.86\textwidth}{
+\centering
+Mission d'acquisition
+\(\downarrow\)
+Système de commande
+\(\downarrow\)
+Moteurs et enrouleurs
+\(\downarrow\)
+Variation coordonnée des longueurs de câbles
+\(\downarrow\)
+Déplacement de la plateforme mobile
+\(\downarrow\)
+Stabilisation et acquisition de l'image
+}}
+\end{minipage}
+\caption{Chaîne fonctionnelle générale du robot Tandem}
+\label{fig:chaine_materielle}
 \end{figure}
 
-La plateforme est un cadre rigide en aluminium 6061-T6 qui porte les 8 points d'attache des câbles et la charge utile (module caméra Raspberry~Pi et électronique de contrôle). La caméra est orientée en vue nadir (verticale) et fixée sous la plateforme, conformément au protocole défini avec le SP3.
+Cette représentation met en évidence la séparation entre la mission, la commande et le mouvement physique. Le programme de planification définit la trajectoire, tandis que l'architecture matérielle réalise cette trajectoire au moyen des câbles et des actionneurs.
+
+\subsection{Plateforme mobile et charge utile}
+
+La plateforme mobile est un cadre rigide en aluminium 6061-T6. Elle porte les huit points d'attache des câbles ainsi que la charge utile destinée à l'acquisition d'images. Ses dimensions sont de $300\times240$~mm, soit un ratio d'aspect de $1{,}25$. Cette géométrie rectangulaire est importante pour la modélisation statique, car elle évite la perte de rang observée avec une plateforme carrée dans la configuration étudiée.
+
+La masse à vide de la plateforme est d'environ $242$~g. La charge utile représente environ $114$~g. Une marge de $8~\%$ est ajoutée pour tenir compte du câblage et des fixations. La masse opérationnelle utilisée dans les calculs vaut ainsi $384$~g. Cette masse est celle qui intervient dans le calcul du poids et dans le test de faisabilité en tension.
 
 \begin{table}[H]
 \centering
 \caption{Caractéristiques de la plateforme mobile}
-\label{tab:plateforme}
-\begin{tabular}{|p{4.5cm}|p{5.5cm}|p{3.5cm}|}
+\label{tab:plateforme_nouvelle}
+\begin{tabular}{|p{5.0cm}|p{4.0cm}|p{4.0cm}|}
 \hline
 \textbf{Paramètre} & \textbf{Valeur} & \textbf{Origine} \\
 \hline
 Matériau & Aluminium 6061-T6 & Choix de conception \\
 \hline
-Dimensions & $300 \times 240$~mm (ratio d'aspect 1,25) & Choix de conception \\
+Dimensions & $300\times240$~mm & Choix de conception \\
 \hline
-Masse à vide & $\approx 242$~g & Mesure \\
+Masse à vide & Environ $242$~g & Mesure \\
 \hline
-Charge utile & $\approx 114$~g & Somme des composants \\
+Charge utile & Environ $114$~g & Somme des composants \\
 \hline
-Marge câblage et fixations & 8~\% & Hypothèse \\
+Marge câblage et fixations & $8~\%$ & Hypothèse de calcul \\
 \hline
-Masse opérationnelle & 384~g & Calcul avec marge \\
+Masse opérationnelle & $384$~g & Calcul avec marge \\
 \hline
-Points d'attache & 8 & Choix de conception \\
+Nombre de points d'attache & $8$ & Choix de conception \\
+\hline
+Orientation caméra & Vue nadir & Protocole d'acquisition \\
 \hline
 \end{tabular}
 \end{table}
+
+La charge utile comprend un Raspberry Pi Zero 2 W, un module caméra Pi Camera Module 3, un câble nappe CSI, une cellule 18650 avec son porte-pile, un convertisseur, un capteur HC-SR04, un accéléromètre trois axes et un boîtier de protection. La caméra est orientée vers le bas afin d'observer les plants selon une direction proche de la verticale.
 
 \begin{table}[H]
 \centering
 \caption{Composition de la charge utile}
-\label{tab:charge}
-\begin{tabular}{|p{5.5cm}|p{2.2cm}|p{5.5cm}|}
+\label{tab:charge_nouvelle}
+\begin{tabular}{|p{6.5cm}|c|p{5.0cm}|}
 \hline
-\textbf{Composant} & \textbf{Masse} & \textbf{Rôle} \\
+\textbf{Composant} & \textbf{Masse} & \textbf{Fonction} \\
 \hline
-Raspberry Pi Zero 2 W & 11~g & Unité de calcul \\
+Raspberry Pi Zero 2 W & $11$~g & Unité de calcul \\
 \hline
-Pi Camera Module 3 & 4,3~g & Capteur d'image RGB \\
+Pi Camera Module 3 & $4{,}3$~g & Acquisition des images \\
 \hline
-Câble nappe CSI & 5~g & Liaison caméra et Pi \\
+Câble nappe CSI & $5$~g & Liaison caméra--calculateur \\
 \hline
-Cellule 18650 avec porte-pile & 47~g & Alimentation \\
+Cellule 18650 et porte-pile & $47$~g & Alimentation \\
 \hline
-Convertisseur (boost) & 12~g & Conversion 3,7~V vers 5~V \\
+Convertisseur boost & $12$~g & Conversion de tension \\
 \hline
-Capteur HC-SR04 & 5~g & Distance aux plants \\
+Capteur HC-SR04 & $5$~g & Mesure de distance \\
 \hline
-Accéléromètre 3 axes & 10~g & Vérification de la stabilité \\
+Accéléromètre trois axes & $10$~g & Suivi de la stabilité \\
 \hline
-Boîtier de protection & 20~g & Protection \\
+Boîtier de protection & $20$~g & Protection des composants \\
 \hline
-Total & $\approx 114$~g & \\
+Total & Environ $114$~g & \\
 \hline
 \end{tabular}
 \end{table}
 
-La masse à vide (242~g) et la charge utile ($\approx 114$~g) donnent environ 356~g. Avec la marge de 8~\% pour le câblage et les fixations, on obtient la masse opérationnelle de 384~g. C'est elle, et non la masse à vide, qui est utilisée dans tous les calculs mécaniques.
+\subsection{Actionnement par câbles}
 
-\subsection{Modèle géométrique inverse et contraintes}
+Les moteurs et les enrouleurs constituent l'interface entre la commande et le mouvement de la plateforme. Une variation de longueur d'un câble modifie la position vers laquelle ce câble tire la plateforme. Comme un câble ne peut exercer qu'un effort de traction, les huit câbles doivent rester suffisamment tendus pendant toute la mission.
 
-Le modèle géométrique inverse (MGI) calcule la longueur de chaque câble à partir de la position $\mathbf{p}$ de la plateforme. L'orientation étant fixe, le calcul se réduit à une distance euclidienne entre l'ancrage $\mathbf{A}_i$ et l'attache $\mathbf{B}_i(\mathbf{p}) = \mathbf{p} + \mathbf{b}_i$ :
+Dans l'étude numérique, le modèle de câble retenu est le modèle rigide. Le câble est supposé rectiligne, inextensible et de masse négligeable. Sa longueur est donc assimilée à la distance entre l'ancrage fixe et le point d'attache mobile. Ce choix simplifie les calculs et permet d'évaluer rapidement un grand nombre de transitions entre les points de vue. L'élasticité des câbles, leur affaissement et les effets du vent ne sont pas pris en compte dans cette première étude.
+
+Les bornes de tension retenues sont $T_{\min}=1$~N et $T_{\max}=58$~N. La borne inférieure permet de maintenir les câbles tendus. La borne supérieure représente la limite de dimensionnement retenue pour les câbles et les actionneurs. Une position n'est donc considérée comme exploitable que si une distribution de tensions respecte simultanément ces deux bornes.
+
+\subsection{Contraintes liées à la mission}
+
+La mission d'acquisition impose plusieurs contraintes au modèle. La distance opérationnelle entre le capteur et les plants est fixée à environ $0{,}30$~m. Avec une hauteur de plants de $0{,}35$~m et le décalage du repère sol de $0{,}20$~m, la hauteur de référence de la plateforme est fixée à $0{,}45$~m dans le repère utilisé.
+
+La plateforme se déplace principalement en translation et son orientation est maintenue fixe. La vitesse maximale est fixée à $0{,}045$~m/s et l'accélération maximale à $0{,}03$~m/s$^2$. Après chaque déplacement, un temps de stabilisation de $2$~s est prévu avant la prise de vue. Ce temps est intégré dans le temps total de mission, mais il n'intervient pas dans l'ordre de visite puisque chaque point reçoit la même durée de stabilisation.
+
+\section{Fonctionnement séquentiel d'une mission}
+\label{sec:fonctionnement_sequentiel}
+
+La partie matérielle précédente a décrit les éléments constitutifs du robot. Il faut maintenant expliquer comment ces éléments interviennent successivement pendant une mission. Cette décomposition par étapes permet de relier la trajectoire calculée par le logiciel au déplacement effectivement attendu de la plateforme.
+
+\subsection{Étape 1 : initialisation}
+
+La mission commence par l'initialisation du calculateur, des actionneurs et des capteurs. La configuration du robot est chargée, les paramètres de déplacement sont vérifiés et la plateforme est associée à une position de référence. Cette étape permet également de s'assurer qu'une trajectoire complète est disponible avant de commencer le mouvement.
+
+\subsection{Étape 2 : positionnement au centre}
+
+Le point central de la grille est utilisé comme position de départ. Ce choix facilite la comparaison entre les trajectoires, car toutes les solutions partent du même point et y reviennent à la fin de la mission. Le centre constitue également une position de référence pratique pour la mise en route et la remise en sécurité de la plateforme.
+
+\subsection{Étape 3 : déplacement vers un point de vue}
+
+Le système lit le point suivant dans l'ordre de visite. La position demandée est transformée en longueurs de câbles par le modèle géométrique inverse. Les moteurs commandent alors les enrouleurs afin de modifier simultanément les huit longueurs. La plateforme se déplace suivant le profil temporel calculé pour la transition.
+
+Le déplacement ne repose donc pas sur l'action d'un seul câble. Il résulte d'une combinaison de tensions et de variations de longueur. Cette coordination est nécessaire pour atteindre la position cible tout en conservant une solution mécanique admissible.
+
+\subsection{Étape 4 : arrêt au point de vue}
+
+À l'arrivée, la vitesse de la plateforme doit revenir à zéro. Le point atteint correspond exactement à une position de prise de vue de la grille. L'arrêt est important, car la caméra doit observer la même zone selon une position connue et reproductible.
+
+\subsection{Étape 5 : stabilisation}
+
+Une durée de stabilisation de $2$~s est ajoutée à chaque point. Les câbles étant souples et faiblement amortis, le mouvement peut produire des oscillations résiduelles. La stabilisation permet d'attendre que ces oscillations diminuent avant de déclencher l'acquisition.
+
+\subsection{Étape 6 : acquisition de l'image}
+
+Lorsque la plateforme est stabilisée, la caméra acquiert l'image du point de vue courant. La position et l'orientation étant maintenues constantes, les images produites peuvent ensuite être comparées ou transmises au SP3 pour les traitements agronomiques.
+
+\subsection{Étape 7 : passage au point suivant}
+
+Après l'acquisition, le système vérifie s'il reste des points à visiter. Si c'est le cas, la même séquence est répétée : déplacement, arrêt, stabilisation et acquisition. L'ordre des points n'est pas arbitraire ; il est fourni par l'algorithme d'optimisation présenté dans la suite du chapitre.
+
+\subsection{Étape 8 : retour au centre}
+
+Lorsque tous les points ont été visités, la plateforme revient au centre. Le retour permet de terminer la mission dans une position de référence commune à toutes les trajectoires. Le système peut ensuite être arrêté ou préparé pour une nouvelle mission.
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.82\textwidth}{
+\centering
+Initialisation
+$\downarrow$
+Départ au centre
+$\downarrow$
+Déplacement vers le point $i$
+$\downarrow$
+Arrêt et stabilisation de $2$~s
+$\downarrow$
+Prise de vue
+$\downarrow$
+Point suivant ?
+$\rightarrow$ Oui : déplacement vers le point $i+1$
+$\rightarrow$ Non : retour au centre
+}}
+\caption{Fonctionnement séquentiel d'une mission d'acquisition}
+\label{fig:sequence_mission}
+\end{figure}
+
+Cette séquence montre que la trajectoire doit satisfaire simultanément une contrainte spatiale, une contrainte temporelle et une contrainte de mission. Elle doit passer par les bons points, respecter les limites de déplacement et permettre un arrêt stable pour l'acquisition.
+
+\section{Architecture logicielle et outils de développement}
+\label{sec:architecture_logicielle}
+
+\subsection{Objectif du programme}
+
+Le programme développé transforme une configuration physique et une mission d'acquisition en une trajectoire validée. Il reçoit la géométrie du robot, ses contraintes mécaniques et cinématiques ainsi que la grille de points de vue. Il génère ensuite les positions candidates, élimine celles qui ne sont pas faisables, calcule les coûts de déplacement et recherche un ordre de visite optimisé.
+
+La chaîne logicielle suit la progression suivante :
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.86\textwidth}{
+\centering
+Bloc 1 : préparation des données
+$\downarrow$
+Bloc 2 : génération et filtrage de l'espace de travail
+$\downarrow$
+Bloc 3 : optimisation des trajectoires
+$\downarrow$
+Bloc 4 : validation, profilage et comparaison
+}}
+\caption{Architecture logicielle générale du projet}
+\label{fig:architecture_logicielle}
+\end{figure}
+
+Chaque bloc possède une fonction précise. Le premier garantit la cohérence des données. Le deuxième sélectionne les positions mécaniquement admissibles. Le troisième recherche un ordre de visite qui réduit le temps et l'énergie. Le quatrième transforme les solutions en trajectoires temporelles et vérifie leur conformité.
+
+\subsection{Outils utilisés}
+
+Le programme est développé en Python. Ce choix est lié à la disponibilité de bibliothèques adaptées au calcul scientifique, à la facilité de prototypage et à la possibilité de séparer clairement les modèles, les services et l'interface utilisateur.
+
+Les principales bibliothèques utilisées sont :
+
+\begin{itemize}
+\item \textbf{NumPy} pour les vecteurs, les matrices et les calculs numériques ;
+\item \textbf{SciPy} pour la programmation linéaire, le solveur HiGHS et les résolutions numériques ;
+\item \textbf{pandas} pour les tableaux de points, les matrices de coûts et les résultats ;
+\item \textbf{pymoo} pour l'implémentation de NSGA-II ;
+\item \textbf{Matplotlib} pour les figures scientifiques ;
+\item \textbf{Streamlit} pour l'interface graphique ;
+\item \textbf{Plotly} pour les visualisations interactives en deux et trois dimensions ;
+\item \textbf{pytest} pour les tests unitaires et les tests d'intégration ;
+\item \textbf{Ruff} pour le contrôle de qualité du code.
+\end{itemize}
+
+L'organisation du dépôt sépare les responsabilités : le répertoire \texttt{src/} contient les modèles et les algorithmes scientifiques, \texttt{services/} assure l'orchestration et la préparation des résultats, \texttt{visualization/} regroupe les figures réutilisables, \texttt{app/} contient l'interface Streamlit et \texttt{tests/} contient les vérifications automatisées.
+
+Cette séparation évite que les formules scientifiques dépendent directement de l'interface graphique. Le même moteur peut ainsi être utilisé depuis la ligne de commande, les tests ou l'interface utilisateur.
+
+\section{Bloc 1 : préparation des données}
+\label{sec:bloc_preparation}
+
+\subsection{Rôle du bloc}
+
+Le premier bloc rassemble les informations nécessaires à l'étude et les transforme en une configuration cohérente. Cette étape est essentielle, car une erreur sur la géométrie, la masse ou les bornes de tension se propagerait à toutes les étapes suivantes.
+
+\subsection{Données d'entrée}
+
+Les données d'entrée comprennent les dimensions de la plateforme, les coordonnées des ancrages fixes et des attaches mobiles, la masse opérationnelle, la hauteur de référence et les bornes de tension. Elles comprennent également la vitesse et l'accélération maximales, le temps de stabilisation, le type de grille, les paramètres de NSGA-II et la graine aléatoire.
+
+La configuration de référence utilise une plateforme de $300\times240$~mm, une masse de $0{,}384$~kg, une tension comprise entre $1$ et $58$~N, une vitesse maximale de $0{,}045$~m/s et une accélération maximale de $0{,}03$~m/s$^2$. La hauteur de référence est $0{,}45$~m.
+
+\subsection{Validation de la configuration}
+
+Avant tout calcul, les paramètres sont contrôlés. Les bornes doivent être compatibles, les dimensions doivent être positives et les paramètres d'optimisation doivent respecter les valeurs minimales autorisées. La configuration effective est ensuite sérialisée afin de conserver une trace exacte des valeurs utilisées pour le calcul.
+
+Cette validation joue également un rôle dans la reproductibilité. Deux campagnes ne peuvent être comparées correctement que si elles utilisent la même configuration, à l'exception éventuelle de la graine aléatoire.
+
+\subsection{Construction du modèle robotique}
+
+À partir de la configuration, le programme construit le modèle géométrique du robot et les objets nécessaires au calcul de la faisabilité. Il prépare notamment les coordonnées des ancrages, les points d'attache, les fonctions de calcul des longueurs et les matrices de structure.
+
+Le poids de la plateforme est calculé à partir de la masse opérationnelle :
 \begin{equation}
-l_i = \sqrt{(A_{ix}-B_{ix}(\mathbf{p}))^2 + (A_{iy}-B_{iy}(\mathbf{p}))^2 + (A_{iz}-B_{iz}(\mathbf{p}))^2}
-\label{eq:mgi}
+mg = 0{,}384\times9{,}81 \simeq 3{,}77~\text{N}.
+\label{eq:poids_tandem}
 \end{equation}
-Les coordonnées des ancrages et des attaches sont définies dans la configuration de référence. Les câbles 1 à 4 sont les câbles hauts (ancrages à $z=1{,}00$~m) et les câbles 5 à 8 les câbles bas (ancrages à $z=0$).
 
-La plateforme est évaluée à la hauteur de référence $z = 0{,}45$~m dans le repère fixe. Cette hauteur découle de la mission : distance opérationnelle capteur--plants de 0,30~m, hauteur de plants de 0,35~m et décalage sol/repère de 0,20~m.
+Ce poids est utilisé dans l'équilibre statique lors du test WFW.
 
-\paragraph{Application numérique.}
-Pour $\mathbf{p}=(0,\,0,\,0{,}45)$~m et $\mathbf{b}_i = (\pm 0{,}150;\,\pm 0{,}120;\,\pm 0{,}025)$~m :
+\subsection{Sorties du bloc}
+
+Le bloc produit une configuration validée, un modèle du robot, une empreinte de configuration et un répertoire de résultats. Ces éléments sont transmis au bloc suivant, qui peut alors générer les positions de la mission.
+
+\section{Bloc 2 : génération et filtrage de l'espace de travail}
+\label{sec:bloc_wfw}
+
+\subsection{Génération de la grille}
+
+Le deuxième bloc génère une grille centrée au-dessus de la parcelle. Chaque point représente une position de prise de vue. La hauteur et l'orientation de la plateforme restent constantes, tandis que les coordonnées horizontales varient selon la taille de la grille et la zone étudiée.
+
+Le point central est conservé comme point de départ et de retour. Les autres points sont destinés à être visités une seule fois.
+
+\subsection{Modèle géométrique inverse appliqué}
+
+Pour chaque position de la plateforme, le modèle géométrique inverse calcule les longueurs des huit câbles. Comme l'orientation est fixe, le point d'attache mobile s'écrit :
 \begin{equation}
-\mathbf{B}_1 = (-0{,}150;\,0{,}120;\,0{,}475),\quad
-l_1 = \sqrt{2{,}7625} \approx 1{,}662~\text{m}
-\label{eq:l1}
+\mathbf{B}_i = \mathbf{p}+\mathbf{b}_i,
+\label{eq:attache_tandem}
 \end{equation}
+où $\mathbf{p}$ est la position du centre de la plateforme et $\mathbf{b}_i$ la position de l'attache dans le repère de la plateforme.
+
+La longueur du câble $i$ vaut alors :
 \begin{equation}
-\mathbf{B}_5 = (-0{,}150;\,0{,}120;\,0{,}425),\quad
-l_5 \approx 1{,}633~\text{m}
-\label{eq:l5}
+l_i = \left\|\mathbf{A}_i-\mathbf{B}_i\right\|,
+\label{eq:mgi_tandem}
 \end{equation}
-Les six autres câbles se déduisent par symétrie.
+où $\mathbf{A}_i$ désigne l'ancrage fixe.
+
+Au centre de la zone de travail, pour $\mathbf{p}=(0,0,0{,}45)$~m et des attaches situées à $\left(\pm0{,}150;\pm0{,}120;\pm0{,}025\right)$~m, la longueur des câbles supérieurs est d'environ $1{,}662$~m et celle des câbles inférieurs d'environ $1{,}633$~m.
 
 \begin{table}[H]
 \centering
-\caption{Longueurs de câbles à la position centrale}
-\label{tab:longueurs}
+\caption{Longueurs des câbles à la position centrale}
+\label{tab:longueurs_centre}
 \begin{tabular}{|c|c|c|c|}
 \hline
-\textbf{Câble} & \textbf{Longueur (m)} & \textbf{Câble} & \textbf{Longueur (m)} \\
+\textbf{Câble} & \textbf{Longueur} & \textbf{Câble} & \textbf{Longueur} \\
 \hline
-1 & 1,662 & 5 & 1,633 \\
-\hline
-2 & 1,662 & 6 & 1,633 \\
-\hline
-3 & 1,662 & 7 & 1,633 \\
-\hline
-4 & 1,662 & 8 & 1,633 \\
+1 à 4 & $1{,}662$~m & 5 à 8 & $1{,}633$~m \\
 \hline
 \end{tabular}
 \end{table}
 
-Les câbles du haut sont plus longs d'environ 2,9~cm que ceux du bas. Le poids de la plateforme vaut :
+\subsection{Matrice de structure et contrôle du rang}
+
+Pour chaque point, le programme construit la matrice de structure à partir des vecteurs unitaires des câbles et des moments associés. Cette matrice possède six lignes : trois correspondent aux forces et trois aux moments. Elle possède huit colonnes, une par câble.
+
+Le rang de cette matrice est contrôlé avant la résolution du problème de tension. Si le rang est inférieur à six, la configuration est considérée comme singulière pour l'équilibre spatial. Dans la configuration étudiée, une plateforme carrée conduit à un moment de lacet identiquement nul et à un rang égal à cinq. La plateforme rectangulaire de $300\times240$~mm conserve un rang égal à six. Le ratio d'aspect de $1{,}25$ est donc compatible avec la condition pratique retenue de ratio supérieur ou égal à $1{,}20$.
+
+\subsection{Test de faisabilité en tension}
+
+Le test WFW vérifie s'il existe une distribution de tensions capable d'équilibrer le poids de la plateforme. Le problème est formulé sous la forme :
 \begin{equation}
-\mathbf{F}_{ext} = (0,\,0,\,-mg,\,0,\,0,\,0),\qquad mg = 0{,}384 \times 9{,}81 \approx 3{,}77~\text{N}
-\label{eq:poids}
+\begin{aligned}
+\text{trouver } &\mathbf{T} \\
+\text{sous contraintes } &\mathbf{W}(\mathbf{p})\mathbf{T}=-\mathbf{F}_{\mathrm{ext}},\\
+&T_{\min}\leq T_i\leq T_{\max},\qquad i=1,\ldots,8.
+\end{aligned}
+\label{eq:wfw_tandem}
 \end{equation}
 
-\subsection{Espace de travail faisable (WFW) et singularité}
+Le solveur HiGHS est utilisé pour résoudre ce problème de programmation linéaire. Une position est conservée si elle satisfait l'équilibre des forces et des moments tout en respectant les bornes $1\leq T_i\leq58$~N.
 
-L'espace de travail faisable en tension (WFW) est déterminé par un test de faisabilité en effort, résolu par programmation linéaire (solveur HiGHS) :
-\begin{equation}
-\min_{\mathbf{T}}\ \mathbf{0}^{\top}\mathbf{T}
-\quad\text{s.c.}\quad
-\mathbf{W}(\mathbf{p})\,\mathbf{T} = -\mathbf{F}_{ext},
-\quad T_{\min}\le T_i \le T_{\max}
-\label{eq:wfw_lp}
-\end{equation}
-La matrice de structure $\mathbf{W}(\mathbf{p})\in\mathbb{R}^{6\times 8}$ s'écrit :
-\begin{equation}
-\mathbf{W} = \bigl[\ \mathbf{U}_i \ ;\ \mathbf{B}_i\times\mathbf{U}_i\ \bigr]_{i=1..8},
-\quad
-\mathbf{U}_i=\frac{\mathbf{A}_i-\mathbf{B}_i}{|\mathbf{A}_i-\mathbf{B}_i|}
-\label{eq:W}
-\end{equation}
+La redondance des huit câbles offre plusieurs distributions possibles pour une même pose. Elle facilite la recherche d'une solution admissible, mais ne garantit pas que cette solution existe à toutes les positions. C'est pourquoi le test est appliqué séparément à chaque point de la grille.
 
-\paragraph{Application numérique : câble 1 au centre.}
-\begin{equation}
-\mathbf{U}_1 \approx (-0{,}662;\,0{,}680;\,0{,}316),\quad
-\mathbf{m}_1 \approx (-0{,}285;\,-0{,}267;\,-0{,}023)
-\label{eq:u1}
-\end{equation}
-Avec $T_{\mathrm{haut}}=58$~N et $T_{\mathrm{bas}}=1$~N :
-\begin{equation}
-\sum F_z \approx 73{,}3 - 1{,}04 = 72{,}3~\text{N}
-\label{eq:fz}
-\end{equation}
-Cette valeur dépasse largement le poids de 3,77~N : il existe une infinité de distributions admissibles.
+\subsection{Zone sécurisée et zone étendue}
 
-Avant de résoudre le LP, le test contrôle le rang de $\mathbf{W}$. Si $\operatorname{rang}(\mathbf{W})<6$, le point est infaisable. Pour une plateforme carrée, le moment de lacet est identiquement nul et le rang tombe à~5. Pour la plateforme rectangulaire $300\times240$~mm (ratio 1,25), le rang reste égal à~6. La condition pratique retenue est un ratio d'aspect $\ge 1{,}20$.
-
-\subsection{Configuration de référence}
+Deux zones de travail sont étudiées. La zone sécurisée est volontairement restreinte afin de garantir une couverture complète. La zone étendue repousse les limites horizontales afin d'observer le comportement du robot près de la frontière du WFW.
 
 \begin{table}[H]
 \centering
-\caption{Paramètres mécaniques et contraintes de la configuration de référence}
-\label{tab:ref}
-\footnotesize
-\begin{tabular}{|p{4.0cm}|p{2.0cm}|p{1.8cm}|p{5.5cm}|}
-\hline
-\textbf{Paramètre} & \textbf{Valeur} & \textbf{Unité} & \textbf{Origine ou justification} \\
-\hline
-Plateforme & $300 \times 240$ & mm & Ratio d'aspect $1{,}25 \ge 1{,}20$ \\
-\hline
-Masse opérationnelle & 0,384 & kg & Mesure et marge de 8~\% \\
-\hline
-Tension minimale $T_{\min}$ & 1,0 & N & 100~\% de couverture \\
-\hline
-Tension maximale $T_{\max}$ & 58,0 & N & Borne de dimensionnement \\
-\hline
-Bornes zone sécurisée, X & $\pm 0{,}40$ & m & Mode zero-loss \\
-\hline
-Bornes zone sécurisée, Y & $\pm 0{,}24$ & m & Mode zero-loss \\
-\hline
-Limites verticales Z & $[0\,;\,0{,}80]$ & m & Configuration historique \\
-\hline
-Hauteur de référence & 0,45 & m & Dans le repère fixe \\
-\hline
-Distance capteur--plants & 0,30 & m & Protocole SP3 \\
-\hline
-Vitesse maximale $v_{\max}$ & 0,045 & m/s & Hypothèse de conception \\
-\hline
-Accélération maximale $a_{\max}$ & 0,03 & m/s$^2$ & Hypothèse de conception \\
-\hline
-Temps de stabilisation & 2,0 & s/point & Évite le flou de mouvement \\
-\hline
-\end{tabular}
-\end{table}
-
-La borne $T_{\max}=58$~N suppose une réduction d'environ 5:1 sur un moteur NEMA~17. La fenêtre de service couvre des plants jusqu'à 0,50~m (haricot nain). Le mode zero-loss désigne une zone resserrée garantissant 100~\% de points faisables.
-
-\section{Chaîne de traitement en quatre macro-blocs}
-\label{sec:macro}
-
-Le pipeline comprend douze sous-blocs regroupés en quatre macro-blocs. Cette modularité apporte testabilité, traçabilité et parallélisation.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth,height=0.42\textheight,keepaspectratio]{macrobloc.png}
-\caption{Chaîne de traitement en quatre macro-blocs}
-\label{fig:macro}
-\end{figure}
-
-\begin{table}[H]
-\centering
-\caption{Correspondance des quatre macro-blocs}
-\label{tab:macro}
-\footnotesize
-\begin{tabular}{|p{4.5cm}|p{4.0cm}|p{5.0cm}|}
-\hline
-\textbf{Macro-bloc} & \textbf{Rôle} & \textbf{Entrées et sorties} \\
-\hline
-1. Préparation des données & Paramètres, $\mathbf{W}$, MGI & Paramètres $\to$ configuration, $\mathbf{W}$ \\
-\hline
-2. Génération de l'espace de travail & Faisabilité, points retenus & Configuration $\to$ points filtrés \\
-\hline
-3. Optimisation des trajectoires & Matrice de coûts, ordre optimal & Points filtrés $\to$ solutions \\
-\hline
-4. Validation de la trajectoire & Profilage, vérification & Trajectoires $\to$ profils, rapport \\
-\hline
-\end{tabular}
-\end{table}
-
-\subsection{Préparation des données}
-
-Le sous-bloc~0 centralise les paramètres dans une structure immuable après validation. Huit règles de validation lèvent une erreur explicite en cas de conflit.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth,height=0.62\textheight,keepaspectratio]{bloc0.png}
-\caption{Organigramme de la configuration}
-\label{fig:bloc0}
-\end{figure}
-
-Le sous-bloc~1 construit $\mathbf{W}$ et le sous-bloc~2 assure la cinématique (MGI fermé, MGD par moindres carrés non linéaires).
-
-\subsection{Génération de l'espace de travail}
-
-Le sous-bloc~4 génère une grille centrée ; le sous-bloc~5 filtre par le test WFW précédé du test de rang. Le centre joue le rôle de verrou.
-
-\clearpage
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth,height=0.90\textheight,keepaspectratio]{bloc3.png}
-\caption{Organigramme du test WFW}
-\label{fig:bloc3}
-\end{figure}
-\clearpage
-
-\subsection{Optimisation des trajectoires}
-\label{sec:macro3}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth,height=0.82\textheight,keepaspectratio]{bloc6.png}
-\caption{Organigramme du calcul de matrice de coût}
-\label{fig:bloc6}
-\end{figure}
-\clearpage
-
-Le temps de déplacement suit un profil LSPB :
-\begin{equation}
-d_{\mathrm{acc}}=\frac{v_{\max}^2}{2a_{\max}},\qquad d_{\mathrm{full}}=2\,d_{\mathrm{acc}}
-\label{eq:dacc}
-\end{equation}
-Si $d\ge d_{\mathrm{full}}$, le profil est trapézoïdal ; sinon triangulaire. Avec $v_{\max}=0{,}045$~m/s et $a_{\max}=0{,}03$~m/s$^2$, $d_{\mathrm{acc}}\approx0{,}034$~m.
-
-L'énergie est une estimation mécanique quasi-statique :
-\begin{equation}
-E\approx\sum_{k}\sum_{i=1}^{8}T_i\bigl(\mathbf{p}_k^{\mathrm{mid}}\bigr)\,|\Delta l_{i,k}|
-\label{eq:energie}
-\end{equation}
-Les tensions sont obtenues par un QP à norme minimale, résolu d'abord par pseudo-inverse puis par SLSQP si nécessaire.
-
-Un individu code une permutation des points non centraux. Les objectifs sont le temps et l'énergie totaux. Les contraintes sont gérées par pénalisation. NSGA-II utilise le croisement OX (taux 0,9) et la mutation par inversion (taux 0,1).
-
-\subsection{Validation de la trajectoire}
-
-Le sous-bloc~9 génère les profils LSPB ; le sous-bloc~10 contrôle sept invariants ; le sous-bloc~11 compare à une baseline. La mission suit six étapes : initialisation, déplacement, stabilisation 2~s, prise de vue, répétition, retour au centre.
-
-\section{Préparation des données}
-
-La campagne s'appuie sur une commande unique (grille, zero-loss, population, générations, graine~42). La graine rend l'optimisation déterministe. Pour la grille $7\times7$, le recouvrement entre points voisins assure une couverture complète de la parcelle.
-
-\section{Génération de l'espace de travail}
-
-\subsection{Zone sécurisée et frontière du WFW}
-
-\begin{table}[H]
-\centering
-\caption{Synthèse de l'exploration de l'espace de travail}
-\label{tab:wfw_synth}
+\caption{Synthèse de la génération et du filtrage des points}
+\label{tab:wfw_synth_nouveau}
 \footnotesize
 \begin{tabular}{|p{3.2cm}|c|c|c|c|c|}
 \hline
-\textbf{Configuration} & \textbf{Grille} & \textbf{Pas (m)} & \textbf{Bornes X/Y} & \textbf{Retenus} & \textbf{Taux} \\
+\textbf{Zone} & \textbf{Grille} & \textbf{Pas X/Y} & \textbf{Bornes X/Y} & \textbf{Points retenus} & \textbf{Taux} \\
 \hline
-Zone sécurisée & $7\times7$ & $0{,}133\times0{,}080$ & $\pm0{,}40/\pm0{,}24$ & 49/49 & 100~\% \\
+Sécurisée & $7\times7$ & $0{,}133/0{,}080$~m & $\pm0{,}40/\pm0{,}24$~m & $49/49$ & $100~\%$ \\
 \hline
-Zone sécurisée & $9\times9$ & $0{,}100\times0{,}060$ & $\pm0{,}40/\pm0{,}24$ & 81/81 & 100~\% \\
+Sécurisée & $9\times9$ & $0{,}100/0{,}060$~m & $\pm0{,}40/\pm0{,}24$~m & $81/81$ & $100~\%$ \\
 \hline
-Zone étendue & $7\times7$ & $0{,}150\times0{,}090$ & $\pm0{,}45/\pm0{,}27$ & 49/49 & 100~\% \\
+Étendue & $7\times7$ & $0{,}150/0{,}090$~m & $\pm0{,}45/\pm0{,}27$~m & $49/49$ & $100~\%$ \\
 \hline
-Zone étendue & $9\times9$ & $0{,}150\times0{,}090$ & $\pm0{,}60/\pm0{,}36$ & 77/81 & 95,1~\% \\
+Étendue & $9\times9$ & $0{,}150/0{,}090$~m & $\pm0{,}60/\pm0{,}36$~m & $77/81$ & $95{,}1~\%$ \\
 \hline
 \end{tabular}
 \end{table}
@@ -321,222 +365,321 @@ Zone étendue & $9\times9$ & $0{,}150\times0{,}090$ & $\pm0{,}60/\pm0{,}36$ & 77
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth,height=0.48\textheight,keepaspectratio]{wfw_grille.jpg}
-\caption{WFW 3D et faisabilité des points selon la taille de grille}
-\label{fig:wfw_grille}
+\caption{Espace de travail faisable et points de grille selon la configuration}
+\label{fig:wfw_grille_nouveau}
 \end{figure}
 
-L'espace de travail faisable en effort (WFW) présente une forme sphérique tronquée dont les limites physiques rejettent les points situés aux extrémités de la grille (croix rouges). Ce comportement justifie le recours au mode «~zero-loss~» : pour garantir 100~\% de points viables, la zone de travail doit être volontairement restreinte.
+La forme du WFW explique le rejet des points situés aux extrémités de la grille étendue. Le mode \og zero-loss \fg{} consiste donc à réduire la zone afin de conserver la totalité des points nécessaires à l'acquisition.
 
+\section{Bloc 3 : construction des coûts et optimisation des trajectoires}
+\label{sec:bloc_optimisation}
 
-\section{Optimisation des trajectoires : dimensionnement de NSGA-II}
+\subsection{Construction de la matrice des coûts}
 
-Campagne de 50 exécutions (2 grilles $\times$ 5 populations $\times$ 5 générations), graine~42, complétée par 12 exécutions de robustesse (graines 30 et 100).
+Après le filtrage, le programme évalue les transitions entre chaque paire de points retenus. Pour chaque transition, il calcule la distance, la faisabilité, le temps de déplacement et l'énergie mécanique estimée. Ces informations sont regroupées dans une matrice de coûts.
+
+La matrice constitue une représentation compacte du problème. Elle permet à l'optimiseur de comparer rapidement deux ordres de visite sans recalculer l'ensemble du modèle à chaque étape de l'évolution.
+
+\subsection{Calcul du temps par profil LSPB}
+
+Le temps de déplacement entre deux points est calculé avec un profil LSPB. Ce profil comprend une phase d'accélération, une éventuelle phase à vitesse constante et une phase de décélération. La plateforme commence et termine chaque transition avec une vitesse nulle, ce qui est adapté à une mission nécessitant un arrêt complet à chaque point.
+
+La distance parcourue pendant la phase d'accélération vaut :
+\begin{equation}
+d_{\mathrm{acc}}=\frac{v_{\max}^2}{2a_{\max}}.
+\label{eq:dacc_tandem}
+\end{equation}
+
+Avec $v_{\max}=0{,}045$~m/s et $a_{\max}=0{,}03$~m/s$^2$, on obtient :
+\begin{equation}
+d_{\mathrm{acc}}\simeq0{,}034~\text{m}.
+\end{equation}
+
+Lorsque la distance est suffisamment grande pour contenir deux phases d'accélération, le profil est trapézoïdal. Pour une distance plus courte, la vitesse maximale n'est pas atteinte et le profil devient triangulaire.
+
+\subsection{Estimation de l'énergie}
+
+L'énergie utilisée dans l'étude est une estimation mécanique quasi-statique. Chaque transition est subdivisée en plusieurs sous-segments. Les tensions sont évaluées à des positions intermédiaires, puis le travail associé à la variation de longueur de chaque câble est additionné :
+\begin{equation}
+E\simeq\sum_k\sum_{i=1}^{8}T_i\left(\mathbf{p}^{\mathrm{mid}}_k\right)\left|\Delta l_{i,k}\right|.
+\label{eq:energie_tandem}
+\end{equation}
+
+La distribution des tensions est recherchée avec une solution à norme minimale. Une résolution bornée est utilisée lorsque la pseudo-inverse ne suffit pas à respecter toutes les contraintes. Ce modèle ne représente pas les pertes électriques, les frottements ou les phénomènes transitoires ; il permet néanmoins de comparer de manière cohérente les ordres de visite.
+
+\subsection{Formulation de l'optimisation}
+
+La mission est formulée comme une tournée de points. Un individu représente une permutation des points non centraux. Le centre est imposé comme point de départ et de retour. Les deux objectifs sont :
+\begin{equation}
+\min\; f_1=\text{temps total de déplacement},
+\qquad
+\min\; f_2=\text{énergie totale}.
+\label{eq:objectifs_tandem}
+\end{equation}
+
+Les solutions infaisables sont pénalisées. Une solution complète doit visiter tous les points retenus exactement une fois, commencer au centre, revenir au centre et utiliser des transitions compatibles avec les contraintes du robot.
+
+\subsection{Optimisation par NSGA-II}
+
+NSGA-II est utilisé parce que le temps et l'énergie constituent deux objectifs qui peuvent être conciliés mais ne sont pas nécessairement identiques. L'algorithme fait évoluer une population de permutations au moyen d'une sélection par dominance, d'un croisement d'ordre et d'une mutation par inversion.
+
+Le croisement OX conserve l'ordre relatif d'une partie de la permutation. La mutation par inversion sélectionne un intervalle puis inverse son ordre. Ces opérateurs sont adaptés à une représentation par permutation, car ils évitent de produire des individus contenant des doublons ou des points manquants.
+
+À la fin de l'optimisation, trois solutions sont extraites : la solution minimisant le temps, la solution minimisant l'énergie et une solution de compromis. Le front de Pareto permet de conserver plusieurs choix au lieu d'imposer à l'avance une pondération arbitraire entre les deux objectifs.
+
+\section{Bloc 4 : profilage, validation et comparaison}
+\label{sec:bloc_validation}
+
+\subsection{Extraction et profilage}
+
+Le quatrième bloc transforme les ordres de visite en trajectoires temporelles. Il vérifie d'abord que tous les points retenus apparaissent exactement une fois, que le centre est présent au début et à la fin et qu'aucune transition interdite n'est utilisée.
+
+Pour chaque segment, le profil LSPB fournit la position, la vitesse, l'accélération et le temps cumulé. Le temps de stabilisation de $2$~s est ensuite associé à chaque point de prise de vue afin d'obtenir le temps total de mission.
+
+\subsection{Vérification des invariants}
+
+La validation numérique contrôle :
+
+\begin{itemize}
+\item la cohérence de la configuration ;
+\item la faisabilité des points filtrés ;
+\item la cohérence et la symétrie de la matrice de coûts ;
+\item la non-dominance des solutions ;
+\item la présence du centre aux extrémités des trajectoires ;
+\item le respect des limites de vitesse et d'accélération ;
+\item la cohérence entre les profils, les coûts et les résumés.
+\end{itemize}
+
+Ces contrôles ne remplacent pas une validation expérimentale sur prototype. Ils vérifient que les artefacts produits par le pipeline sont cohérents avec les hypothèses et les contraintes du modèle numérique.
+
+\subsection{Construction de la baseline}
+
+La référence utilisée est une trajectoire en zigzag. Elle visite les points ligne par ligne, avec un départ et un retour au centre. Pour garantir une comparaison équitable, la baseline utilise le même ensemble de points et les mêmes modèles de temps et d'énergie que les trajectoires optimisées.
+
+Lorsque la zone étendue contient des points rejetés, la comparaison utilise l'ensemble réellement retenu. Les gains sont alors calculés sur des configurations comparables, sans attribuer artificiellement à l'optimisation un avantage provenant d'un nombre différent de points.
+
+\subsection{Calcul des gains}
+
+Pour une grandeur $C$, le gain par rapport à la baseline est calculé par :
+\begin{equation}
+\mathrm{gain}(C)=\frac{C_{\mathrm{baseline}}-C_{\mathrm{optimisé}}}{C_{\mathrm{baseline}}}\times100.
+\label{eq:gain_tandem}
+\end{equation}
+
+Cette expression est appliquée séparément au temps de déplacement et à l'énergie.
+
+\section{Protocole d'étude}
+\label{sec:protocole_etude}
+
+\subsection{Configuration de référence}
+
+La campagne d'étude utilise la configuration suivante :
 
 \begin{table}[H]
 \centering
-\caption{Grille $7\times7$ : temps (s) / énergie (J) du meilleur point, graine 42}
-\label{tab:camp7}
+\caption{Paramètres de la configuration de référence}
+\label{tab:parametres_reference_nouveau}
 \footnotesize
-\begin{tabular}{|c|c|c|c|c|c|}
+\begin{tabular}{|p{5.0cm}|c|c|p{5.0cm}|}
 \hline
-\textbf{Pop.} & \textbf{1500} & \textbf{2000} & \textbf{3000} & \textbf{4000} & \textbf{5000} \\
+\textbf{Paramètre} & \textbf{Valeur} & \textbf{Unité} & \textbf{Origine} \\
 \hline
-200 & 178,58 / 248,8 & 177,98 / 247,1 & 177,98 / 247,0 & 177,98 / 247,0 & 177,98 / 247,0 \\
+Plateforme & $300\times240$ & mm & Choix de conception \\
 \hline
-300 & 177,30 / 246,4 & 177,30 / 246,4 & 177,30 / 246,4 & 177,30 / 246,4 & 177,30 / 246,4 \\
+Masse opérationnelle & $0{,}384$ & kg & Mesure et marge \\
 \hline
-400 & 178,96 / 250,4 & 177,98 / 248,1 & 177,98 / 247,5 & 177,98 / 247,0 & 177,30 / 246,7 \\
+Hauteur de référence & $0{,}45$ & m & Mission d'acquisition \\
 \hline
-500 & 177,30 / 246,4 & 177,30 / 246,4 & 177,30 / 246,4 & 177,30 / 246,4 & 177,30 / 246,4 \\
+Tension minimale & $1$ & N & Maintien de la tension \\
 \hline
-600 & 177,30 / 246,4 & 177,30 / 246,4 & 177,30 / 246,4 & 177,30 / 246,4 & 177,30 / 246,4 \\
+Tension maximale & $58$ & N & Dimensionnement \\
+\hline
+Vitesse maximale & $0{,}045$ & m/s & Hypothèse de conception \\
+\hline
+Accélération maximale & $0{,}03$ & m/s$^2$ & Hypothèse de conception \\
+\hline
+Stabilisation & $2$ & s/point & Qualité de prise de vue \\
 \hline
 \end{tabular}
 \end{table}
 
+\subsection{Scénarios étudiés}
+
+Quatre configurations sont comparées : les grilles $7\times7$ et $9\times9$, chacune étudiée dans une zone sécurisée et dans une zone étendue. Les deux tailles de grille permettent d'observer l'influence du nombre de points. Les deux zones permettent d'étudier le compromis entre couverture et proximité de la frontière du WFW.
+
+\subsection{Dimensionnement de NSGA-II}
+
+Le dimensionnement repose sur une campagne de 50 exécutions correspondant à deux tailles de grille, cinq tailles de population et cinq nombres de générations. Une campagne complémentaire de 12 exécutions de robustesse utilise plusieurs graines aléatoires afin d'évaluer la dispersion des résultats.
+
+Pour la grille $7\times7$, le plateau optimal est atteint rapidement. Une population de 500 individus et 2~000 générations est retenue. Pour la grille $9\times9$, l'espace de recherche est plus grand et la convergence demande un budget supérieur. Une population de 600 individus et 5~000 générations est retenue.
+
 \begin{table}[H]
 \centering
-\caption{Grille $9\times9$ : temps (s) / énergie (J) du meilleur point, graine 42}
-\label{tab:camp9}
-\footnotesize
-\begin{tabular}{|c|c|c|c|c|c|}
+\caption{Paramètres retenus pour NSGA-II}
+\label{tab:parametres_nsga_nouveau}
+\begin{tabular}{|c|c|c|p{6.0cm}|}
 \hline
-\textbf{Pop.} & \textbf{1500} & \textbf{2000} & \textbf{3000} & \textbf{4000} & \textbf{5000} \\
+\textbf{Grille} & \textbf{Population} & \textbf{Générations} & \textbf{Justification} \\
 \hline
-200 & 267,17 / 325,4 & 262,20 / 318,8 & 255,64 / 307,4 & 254,90 / 304,3 & 253,65 / 304,3 \\
+$7\times7$ & $500$ & $2000$ & Résultat stable avec un coût de calcul modéré \\
 \hline
-300 & 260,02 / 312,4 & 253,57 / 304,7 & 248,60 / 295,2 & 248,09 / 295,2 & 247,55 / 294,2 \\
-\hline
-400 & 262,77 / 315,6 & 253,77 / 304,3 & 252,06 / 301,7 & 249,98 / 299,0 & 249,98 / 297,9 \\
-\hline
-500 & 248,09 / 296,6 & 248,09 / 296,6 & 247,55 / 295,6 & 247,04 / 295,4 & 247,04 / 294,8 \\
-\hline
-600 & 255,44 / 310,2 & 253,90 / 305,5 & 249,81 / 298,0 & 247,78 / 294,1 & 247,04 / 294,1 \\
+$9\times9$ & $600$ & $5000$ & Meilleure moyenne et dispersion réduite \\
 \hline
 \end{tabular}
 \end{table}
+
+\section{Résultats de faisabilité et de dimensionnement}
+\label{sec:resultats_dimensionnement}
+
+\subsection{Faisabilité des points}
+
+Le filtrage confirme que la zone sécurisée conserve la totalité des points pour les deux tailles de grille. Les grilles $7\times7$ et $9\times9$ contiennent respectivement 49 et 81 points, et tous sont retenus dans la zone sécurisée.
+
+Dans la zone étendue, la grille $7\times7$ conserve également ses 49 points. En revanche, la grille $9\times9$ ne conserve que 77 points sur 81. Les quatre points rejetés se situent aux extrémités de la zone et se rapprochent de la frontière du WFW.
+
+Ce résultat justifie le choix de la zone sécurisée lorsque la mission exige une couverture complète et régulière. La zone étendue reste utile pour étudier les limites du système, mais elle ne constitue pas la zone de service privilégiée.
+
+\subsection{Résultats de la campagne de dimensionnement}
+
+Pour la grille $7\times7$, les meilleurs résultats apparaissent rapidement. Avec une population de 300, 500 ou 600 individus, les valeurs optimales sont atteintes dès les premières configurations testées. L'augmentation du nombre de générations au-delà de 2~000 apporte donc peu d'amélioration supplémentaire.
+
+Pour la grille $9\times9$, la convergence est plus progressive. Les temps et les énergies diminuent lorsque la population et le nombre de générations augmentent. La configuration $600\times5000$ fournit la meilleure moyenne parmi les réglages étudiés.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth,height=0.34\textheight,keepaspectratio]{hm_time_7x7.png}\\[0.3em]
 \includegraphics[width=0.92\textwidth,height=0.34\textheight,keepaspectratio]{hm_time_9x9.png}
-\caption{Cartes de chaleur du meilleur temps : (a) grille $7\times7$, (b) grille $9\times9$}
-\label{fig:hm_time}
+\caption{Cartes de chaleur du meilleur temps selon les paramètres de NSGA-II}
+\label{fig:hm_time_nouveau}
 \end{figure}
-
-La convergence du temps de déplacement dépend fortement de la taille de la grille. Alors que le plateau optimal est atteint dès 1500 générations pour la grille $7\times7$, il faut attendre 5000 générations pour stabiliser la grille $9\times9$. Cela justifie le dimensionnement différencié des paramètres de NSGA-II retenu pour chaque configuration.
-
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth,height=0.34\textheight,keepaspectratio]{hm_energy_7x7.png}\\[0.3em]
 \includegraphics[width=0.92\textwidth,height=0.34\textheight,keepaspectratio]{hm_energy_9x9.png}
-\caption{Cartes de chaleur de la meilleure énergie : (a) grille $7\times7$, (b) grille $9\times9$}
-\label{fig:hm_energy}
+\caption{Cartes de chaleur de la meilleure énergie selon les paramètres de NSGA-II}
+\label{fig:hm_energy_nouveau}
 \end{figure}
 
+\subsection{Robustesse vis-à-vis de la graine aléatoire}
 
+Les essais réalisés avec plusieurs graines montrent que les solutions se regroupent dans le plan temps--énergie. La dispersion diminue lorsque la taille de la population augmente. Pour la grille $7\times7$, la configuration $500\times2000$ présente un temps moyen de $177{,}98\pm0{,}69$~s et une énergie moyenne de $247{,}4\pm1{,}1$~J. Pour la grille $9\times9$, la configuration $600\times5000$ présente un temps moyen de $247{,}02\pm0{,}51$~s et une énergie moyenne de $293{,}3\pm1{,}2$~J.
 
 \begin{table}[H]
 \centering
-\caption{Robustesse sur trois graines (42, 30 et 100)}
-\label{tab:robust}
+\caption{Robustesse des configurations retenues}
+\label{tab:robustesse_nouveau}
 \footnotesize
 \begin{tabular}{|c|c|c|c|c|}
 \hline
-\textbf{Grille} & \textbf{Pop. $\times$ gén.} & \textbf{Temps $\pm\sigma$ (s)} & \textbf{Énergie $\pm\sigma$ (J)} & \textbf{Durée (s)} \\
+\textbf{Grille} & \textbf{Configuration} & \textbf{Temps moyen} & \textbf{Énergie moyenne} & \textbf{Durée moyenne} \\
 \hline
-$7\times7$ & $300\times1500$ & $178{,}31\pm0{,}89$ & $248{,}5\pm2{,}1$ & 37 \\
+$7\times7$ & $500\times2000$ & $177{,}98\pm0{,}69$~s & $247{,}4\pm1{,}1$~J & $73$~s \\
 \hline
-$7\times7$ & $500\times2000$ & $177{,}98\pm0{,}69$ & $247{,}4\pm1{,}1$ & 73 \\
-\hline
-$7\times7$ & $600\times3000$ & $177{,}52\pm0{,}39$ & $246{,}6\pm0{,}3$ & 132 \\
-\hline
-$9\times9$ & $500\times5000$ & $248{,}65\pm2{,}79$ & $295{,}9\pm3{,}2$ & 205 \\
-\hline
-$9\times9$ & $600\times4000$ & $247{,}44\pm0{,}39$ & $293{,}5\pm1{,}2$ & 211 \\
-\hline
-$9\times9$ & $600\times5000$ & $247{,}02\pm0{,}51$ & $293{,}3\pm1{,}2$ & 248 \\
+$9\times9$ & $600\times5000$ & $247{,}02\pm0{,}51$~s & $293{,}3\pm1{,}2$~J & $248$~s \\
 \hline
 \end{tabular}
 \end{table}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.92\textwidth,height=0.28\textheight,keepaspectratio]{robust_box_7x7.png}
-\caption{Dispersion du temps et de l'énergie selon la configuration (grille $7\times7$)}
-\label{fig:robust_box}
-\end{figure}
+Cette concentration des résultats indique que les performances obtenues ne reposent pas uniquement sur une initialisation favorable. Elle soutient le choix des paramètres utilisés pour les résultats de référence.
 
-L'analyse de la dispersion sur 50 exécutions révèle une réduction drastique de la variabilité (boîtes plus courtes, disparition des valeurs aberrantes) lorsque la taille de la population augmente. Une population de 500 individus garantit ainsi une stabilité et une reproductibilité accrues de l'algorithme, indépendamment du hasard.
+\section{Vérification numérique du pipeline}
+\label{sec:verification_numerique_nouveau}
 
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.90\textwidth,height=0.26\textheight,keepaspectratio]{robust_seeds_7x7.png}\\[0.2em]
-\includegraphics[width=0.90\textwidth,height=0.26\textheight,keepaspectratio]{robust_seeds_9x9.png}
-\caption{Positions des graines 30 et 100 dans le plan temps--énergie}
-\label{fig:robust_seeds}
-\end{figure}
-
-La comparaison des graines aléatoires (30 et 100) montre un regroupement spatial très serré des solutions dans l'espace des objectifs. Cette convergence démontre la robustesse statistique de NSGA-II : la qualité de la trajectoire optimisée ne dépend pas d'un «~coup de chance~», mais converge systématiquement vers les meilleures performances.
-
+La vérification numérique porte sur le run de référence de la grille $7\times7$. Elle contrôle les invariants nécessaires à l'interprétation des résultats.
 
 \begin{table}[H]
 \centering
-\caption{Paramètres retenus}
-\label{tab:params}
-\begin{tabular}{|c|c|c|p{7cm}|}
-\hline
-\textbf{Grille} & \textbf{Population} & \textbf{Générations} & \textbf{Justification} \\
-\hline
-$7\times7$ & 500 & 2000 & Meilleur résultat graine 42 en 73~s, dispersion modérée \\
-\hline
-$9\times9$ & 600 & 5000 & Meilleure moyenne (247,02~s ; 293,3~J), dispersion faible \\
-\hline
-\end{tabular}
-\end{table}
-
-\section{Vérification numérique}
-\label{sec:verif}
-
-\begin{table}[H]
-\centering
-\caption{Résultats de validation du run de référence $7\times7$}
-\label{tab:valid}
+\caption{Résultats de la vérification numérique du run de référence}
+\label{tab:validation_nouveau}
 \footnotesize
-\begin{tabular}{|p{5cm}|c|p{7cm}|}
+\begin{tabular}{|p{5.0cm}|c|p{6.5cm}|}
 \hline
-\textbf{Invariant} & \textbf{Statut} & \textbf{Évidence} \\
+\textbf{Contrôle} & \textbf{Statut} & \textbf{Évidence} \\
 \hline
-Cohérence de la configuration & PASS & $N=49$ ; $T\in[1;58]$~N ; orientation fixe \\
+Cohérence de la configuration & PASS & $N=49$ et tensions comprises entre $1$ et $58$~N \\
 \hline
-Faisabilité des points filtrés & PASS & 49 points ; aucun infaisable \\
+Faisabilité des points & PASS & 49 points conservés et aucun point infaisable \\
 \hline
-Symétrie de la matrice de coûts & PASS & 2401 entrées ; symétrie ; diagonale nulle \\
+Symétrie de la matrice des coûts & PASS & 2401 entrées, diagonale nulle et symétrie vérifiée \\
 \hline
-Non-dominance (front de Pareto) & WARN & Une solution non dominée unique \\
+Non-dominance du front & WARN & Front réduit à une solution non dominée distincte \\
 \hline
-Cohérence des trajectoires & PASS & 3 types ; centre aux extrémités \\
+Cohérence des trajectoires & PASS & Trois types de solutions et centre aux extrémités \\
 \hline
-Profils cinématiques & PASS & 5361 échantillons ; $v_{\max}=0{,}045$~m/s \\
+Profils cinématiques & PASS & 5361 échantillons et vitesse maximale respectée \\
 \hline
 Cohérence croisée & PASS & Profils, matrice et résumé concordants \\
 \hline
 \end{tabular}
 \end{table}
 
-Résultat : 6 PASS, 1 WARN, 0 FAIL sur les 50 exécutions. Le WARN signale un front trop réduit pour étudier le compromis temps--énergie.
+Le bilan comporte six contrôles PASS, un avertissement et aucun échec. L'avertissement signifie que le front est trop réduit dans cette configuration pour étudier un compromis très différencié entre le temps et l'énergie. Il ne signale pas une trajectoire invalide.
 
-\section{Résultats et analyse}
+\section{Résultats et analyse des trajectoires}
+\label{sec:resultats_trajectoires}
 
-\subsection{Configuration de référence (zone sécurisée)}
+\subsection{Résultats sur la zone sécurisée}
 
-Pour la grille $7\times7$ : solution unique 177,30~s / 246,44~J contre baseline 229,3~s / 340,3~J (gains 22,7~\% et 27,6~\%). Pour la grille $9\times9$ : temps minimal 247,04~s, énergie minimale 294,09~J contre baseline 312,9~s / 412,6~J (gains 21,0~\% et 28,7~\%).
+La zone sécurisée fournit les résultats de référence du mémoire. Elle garantit que tous les points nécessaires à la mission sont faisables, ce qui permet de comparer les deux tailles de grille sans perte de couverture.
 
 \begin{table}[H]
 \centering
-\caption{Résultats de la configuration de référence}
-\label{tab:res_ref}
+\caption{Résultats de référence sur la zone sécurisée}
+\label{tab:resultats_reference_nouveau}
 \footnotesize
 \begin{tabular}{|c|c|c|c|c|c|c|c|}
 \hline
-\textbf{Grille} & \textbf{Temps (s)} & \textbf{Énergie (J)} & \textbf{Baseline} & \textbf{Gain t} & \textbf{Gain E} & \textbf{Stab.} & \textbf{Total} \\
+\textbf{Grille} & \textbf{Temps} & \textbf{Énergie} & \textbf{Baseline} & \textbf{Gain temps} & \textbf{Gain énergie} & \textbf{Stab.} & \textbf{Total} \\
 \hline
-$7\times7$ & 177,30 & 246,44 & 229,3 / 340,3 & 22,7~\% & 27,6~\% & 98~s & 275,3~s \\
+$7\times7$ & $177{,}30$~s & $246{,}44$~J & $229{,}3$~s / $340{,}3$~J & $22{,}7\%$ & $27{,}6\%$ & $98$~s & $275{,}3$~s \\
 \hline
-$9\times9$ & 247,04 & 294,09 & 312,9 / 412,6 & 21,0~\% & 28,7~\% & 162~s & 409,0~s \\
+$9\times9$ & $247{,}04$~s & $294{,}09$~J & $312{,}9$~s / $412{,}6$~J & $21{,}0\%$ & $28{,}7\%$ & $162$~s & $409{,}0$~s \\
 \hline
 \end{tabular}
 \end{table}
+
+Pour la grille $7\times7$, la trajectoire optimisée réduit le temps de déplacement de $229{,}3$~s à $177{,}30$~s. L'énergie passe de $340{,}3$~J à $246{,}44$~J. Les gains sont donc respectivement de $22{,}7\%$ et $27{,}6\%$.
+
+Pour la grille $9\times9$, le temps optimisé est de $247{,}04$~s et l'énergie de $294{,}09$~J, contre $312{,}9$~s et $412{,}6$~J pour la baseline. Les gains atteignent $21{,}0\%$ sur le temps et $28{,}7\%$ sur l'énergie.
+
+Ces résultats montrent que l'optimisation ne se contente pas de réduire une seule grandeur. Elle identifie des ordres de visite qui évitent plusieurs retours inutiles de la stratégie en zigzag. Le bénéfice apparaît donc simultanément sur le temps et sur l'énergie dans les deux tailles de grille.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth,height=0.34\textheight,keepaspectratio]{comp_sec_7x7.png}\\[0.3em]
 \includegraphics[width=0.92\textwidth,height=0.34\textheight,keepaspectratio]{comp_sec_9x9.png}
-\caption{Temps et énergie : baseline zigzag et trajectoires optimisées, zone sécurisée}
-\label{fig:comp_sec}
+\caption{Comparaison des temps et des énergies en zone sécurisée}
+\label{fig:comp_sec_nouveau}
 \end{figure}
 
-La comparaison en barres met en évidence l'écart de performance entre le balayage en zigzag (gris) et les trajectoires optimisées (vert, rouge, violet) sur les deux tailles de grille. Le point clé est la réduction systématique et visible de la hauteur des barres colorées par rapport à la référence, illustrant les gains substantiels obtenus. Pour la grille $7\times7$, les trois solutions optimisées se superposent parfaitement (solution unique), tandis que pour la grille $9\times9$, elles présentent des variations minimes. Cette visualisation valide quantitativement l'efficacité de l'algorithme NSGA-II, qui permet de réduire le temps de mouvement de 21,0~\% à 22,7~\% et l'énergie mécanique de 27,6~\% à 28,7~\% par rapport à une approche conventionnelle.
+Pour la grille $7\times7$, les trois solutions extraites du front de Pareto se superposent pratiquement. Le front se réduit alors à une solution distincte. Pour la grille $9\times9$, les solutions présentent de faibles différences, ce qui laisse une marge de choix entre rapidité, économie et compromis.
 
+\subsection{Analyse des trajectoires optimisées}
+
+La trajectoire optimisée de la grille $7\times7$ évite les croisements et les retours caractéristiques d'un balayage systématique ligne par ligne. La superposition des solutions temps, énergie et compromis confirme que la même séquence est sélectionnée pour les trois critères extraits.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{traj_sec_7x7.png}
-\caption{Trajectoire en zone sécurisée pour grille $7\times7$}
-\label{fig:traj_sec_7}
+\caption{Trajectoires optimisées et baseline en zone sécurisée pour la grille $7\times7$}
+\label{fig:traj_sec_7_nouveau}
 \end{figure}
 
-La comparaison visuelle met en évidence la rupture entre la baseline en zigzag (gris) et les trajectoires optimisées. Le point clé est la superposition parfaite des trois courbes (vert, rouge, violet) : elles empruntent exactement le même chemin, confirmant visuellement que le front de Pareto se réduit à une solution unique (singleton) pour cette configuration. Contrairement au balayage systématique ligne par ligne, l'algorithme trace un parcours fluide qui évite les croisements et les retours inutiles, validant ainsi les gains de 22,7~\% en temps et de 27,6~\% en énergie observés sur la grille $7\times7$.
+Pour la grille $9\times9$, le nombre supérieur de points produit une trajectoire plus longue et plus dense. Malgré cela, la stratégie optimisée conserve un avantage net sur la baseline. La trajectoire calculée reste compatible avec le départ et le retour au centre ainsi qu'avec les arrêts nécessaires aux prises de vue.
 
-\clearpage
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{traj_sec_9x9.png}
-\caption{Trajectoire en zone sécurisée pour grille $9\times9$}
-\label{fig:traj_sec_9}
+\caption{Trajectoires optimisées et baseline en zone sécurisée pour la grille $9\times9$}
+\label{fig:traj_sec_9_nouveau}
 \end{figure}
+
+\subsection{Analyse des tensions}
+
+La tension nécessaire varie avec la position de la plateforme. Elle est plus faible au centre, où la géométrie est relativement équilibrée, et augmente vers les bords, où les câbles doivent produire des efforts plus importants pour maintenir la plateforme.
+
+Pour la zone sécurisée $7\times7$, la tension maximale minimale varie d'environ $3{,}8$~N au centre à $35{,}7$~N vers les bords. Cette valeur reste inférieure à la borne de $58$~N, avec une marge de $22{,}3$~N dans la configuration observée.
 
 \begin{figure}[H]
 \centering
@@ -548,117 +691,103 @@ La comparaison visuelle met en évidence la rupture entre la baseline en zigzag 
 \centering
 \includegraphics[width=\textwidth]{tens_minmax.png}
 \end{minipage}
-\caption{Tension des câbles par point pour grille $7\times7$}
-\label{fig:tension}
+\caption{Répartition des tensions dans la grille $7\times7$}
+\label{fig:tension_nouveau}
 \end{figure}
 
-La répartition spatiale des tensions met en évidence un gradient marqué : minimale au centre (3,8~N), la tension requise augmente fortement vers les bords de la grille (jusqu'à 35,7~N) en raison de l'éloignement des ancrages. Cette élévation valide la robustesse de l'approche, les tensions maximales restant largement inférieures à la limite de sécurité de 58~N.
+Cette évolution confirme l'intérêt de la zone sécurisée. Les points périphériques restent atteignables, mais ils sollicitent davantage les câbles. La réserve disponible sous la limite supérieure contribue à la robustesse de la configuration simulée.
 
+\section{Effet de la couverture de la zone de travail}
+\label{sec:effet_couverture_nouveau}
 
-Sur la zone sécurisée $7\times7$, la tension maximale minimale varie de 3,8~N au centre à 35,7~N au bord (marge de 22,3~N sous la limite de 58~N).
+\subsection{Grille $7\times7$ étendue}
 
-\subsection{Effet de la couverture de la zone de travail}
+Dans la zone étendue $7\times7$, les 49 points restent faisables. Le temps de déplacement minimal atteint environ $191{,}83$~s et l'énergie environ $315{,}61$~J. Les gains par rapport à la référence zigzag sont de $22{,}9\%$ sur le temps et de $25{,}5\%$ sur l'énergie.
 
-Sur la grille $7\times7$ étendue : temps minimal 191,83~s / 315,61~J (gain 22,9~\% / 25,5~\% face au zigzag). Sur la grille $9\times9$ étendue (77 points) : temps minimal 301,15~s, énergie 636,65~J (gains 2,0~\% / 2,7~\% face au plus proche voisin).
+L'extension ne supprime donc pas l'intérêt de l'optimisation pour cette grille. Elle augmente toutefois le coût absolu de la mission : les distances sont plus grandes et la plateforme travaille plus près de la frontière du WFW.
+
+\subsection{Grille $9\times9$ étendue}
+
+Dans la zone étendue $9\times9$, quatre points sont rejetés. La mission est donc réalisée sur 77 points au lieu de 81. Le temps de déplacement minimal atteint environ $301{,}15$~s et l'énergie $636{,}65$~J. Les gains par rapport à la baseline utilisée dans cette configuration sont limités à $2{,}0\%$ sur le temps et $2{,}7\%$ sur l'énergie.
+
+La faible amélioration s'explique par la densité de la grille et par la structure de la référence. Pour un maillage dense, le balayage ligne par ligne est déjà relativement efficace. L'optimisation conserve néanmoins une trajectoire cohérente malgré les quatre points rejetés aux extrémités.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth,height=0.34\textheight,keepaspectratio]{comp_ext_7x7.png}\\[0.3em]
 \includegraphics[width=0.92\textwidth,height=0.34\textheight,keepaspectratio]{comp_ext_9x9.png}
-\caption{Temps et énergie, zone étendue}
-\label{fig:comp_ext}
+\caption{Comparaison des performances dans la zone étendue}
+\label{fig:comp_ext_nouveau}
 \end{figure}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{traj_ext_7x7.png}
-\caption{Tracé 2D des trajectoires, zone étendue — grille $7\times7$}
-\label{fig:traj_ext_7}
-\end{figure}
-
-Le tracé comparatif met en évidence la supériorité des chemins optimisés (vert, rouge, violet) sur la baseline en zigzag (gris). On observe que l'algorithme évite les allers-retours systématiques et les croisements inutiles, réduisant ainsi la distance globale parcourue. Cette visualisation confirme le gain de 22,9~\% en temps : NSGA-II exploite efficacement l'espace élargi en trouvant un ordre de visite beaucoup plus fluide.
-
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{traj_ext_9x9.png}
-\caption{Tracé 2D des trajectoires, zone étendue — grille $9\times9$}
-\label{fig:traj_ext_9}
-\end{figure}
-
-La représentation de la grille $9\times9$ étendue (77 points, coins rejetés) révèle des trajectoires optimisées plus denses et complexes. Contrairement à la grille $7\times7$, les gains face à la baseline sont marginaux (2,0~\% en temps), car le balayage colonne par colonne est déjà naturellement proche de l'optimum pour un maillage aussi fin. L'optimisation démontre néanmoins sa capacité à gérer des espaces non convexes en contournant les quatre coins infaisables tout en maintenant un trajet cohérent et sans croisement.
-
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth,height=0.42\textheight,keepaspectratio]{conv_7x7.png}\\[0.35em]
-\includegraphics[width=0.95\textwidth,height=0.42\textheight,keepaspectratio]{conv_9x9.png}
-\caption{Convergence de NSGA-II, zone étendue : (a) grille $7\times7$, (b) grille $9\times9$}
-\label{fig:conv}
-\end{figure}
-
-L'évolution de l'algorithme au fil des générations est marquée par une chute rapide des coûts (temps et énergie), suivie d'un plateau asymptotique, tandis que la population maintient un taux de faisabilité de 100~\%. Cette dynamique confirme que les nombres de générations retenus (2000 et 5000) sont amplement suffisants pour atteindre l'optimum sans calculs superflus.
-
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.92\textwidth,height=0.34\textheight,keepaspectratio]{pareto_7x7.png}\\[0.3em]
-\includegraphics[width=0.92\textwidth,height=0.34\textheight,keepaspectratio]{pareto_9x9.png}
-\caption{Fronts de Pareto temps--énergie, zone étendue}
-\label{fig:pareto}
-\end{figure}
-
-L'analyse du front de Pareto révèle que les trois solutions optimales (temps minimal, énergie minimale et compromis) sont extrêmement proches les unes des autres. Cela démontre que, pour cette configuration, minimiser le temps ne dégrade pas significativement l'énergie, ce qui simplifie le choix de la trajectoire finale.
-
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.92\textwidth,height=0.34\textheight,keepaspectratio]{prof_7x7.png}\\[0.3em]
-\includegraphics[width=0.92\textwidth,height=0.34\textheight,keepaspectratio]{prof_9x9.png}
-\caption{Profils de vitesse LSPB des trois trajectoires, zone étendue}
-\label{fig:prof}
-\end{figure}
+\subsection{Comparaison des zones}
 
 \begin{table}[H]
 \centering
-\caption{Comparaison zone sécurisée et zone étendue}
-\label{tab:zones}
+\caption{Comparaison entre la zone sécurisée et la zone étendue}
+\label{tab:zones_nouveau}
 \footnotesize
 \begin{tabular}{|c|c|c|c|c|c|}
 \hline
-\textbf{Grille} & \textbf{Zone} & \textbf{Points} & \textbf{Temps (s)} & \textbf{Énergie (J)} & \textbf{Total (s)} \\
+\textbf{Grille} & \textbf{Zone} & \textbf{Points} & \textbf{Temps} & \textbf{Énergie} & \textbf{Temps total} \\
 \hline
-$7\times7$ & Sécurisée & 49 & 177,30 & 246,44 & 275,3 \\
+$7\times7$ & Sécurisée & $49$ & $177{,}30$~s & $246{,}44$~J & $275{,}3$~s \\
 \hline
-$7\times7$ & Étendue & 49 & 191,83 & 314,93 & 289,8 \\
+$7\times7$ & Étendue & $49$ & $191{,}83$~s & $314{,}93$~J & $289{,}8$~s \\
 \hline
-$9\times9$ & Sécurisée & 81 & 247,04 & 294,09 & 409,0 \\
+$9\times9$ & Sécurisée & $81$ & $247{,}04$~s & $294{,}09$~J & $409{,}0$~s \\
 \hline
-$9\times9$ & Étendue & 77 & 301,15 & 636,65 & 455,2 \\
+$9\times9$ & Étendue & $77$ & $301{,}15$~s & $636{,}65$~J & $455{,}2$~s \\
 \hline
 \end{tabular}
 \end{table}
 
-Pour la grille $7\times7$, l'extension ajoute 8,2~\% de temps et 28~\% d'énergie. Pour la grille $9\times9$, elle ajoute 22~\% de temps et 116~\% d'énergie. La zone sécurisée est retenue comme zone de service.
+Pour la grille $7\times7$, l'extension ajoute environ $8{,}2\%$ de temps et $28\%$ d'énergie. Pour la grille $9\times9$, elle ajoute environ $22\%$ de temps et $116\%$ d'énergie, malgré le rejet de quatre points. L'énergie est donc le critère le plus sensible à l'extension de la zone de travail.
 
-\section{Discussion et perspectives}
+La zone sécurisée est par conséquent retenue comme zone de service. Elle permet de conserver tous les points, de maintenir les tensions dans une marge acceptable et de réduire plus fortement le coût de la mission.
 
-\subsection{Limites}
+\section{Discussion, limites et perspectives}
+\label{sec:discussion_perspectives_nouveau}
 
-Résultats issus de simulations (câbles rigides, pas de vent, énergie quasi-statique). Paramètres à confirmer : masse opérationnelle, $T_{\max}=58$~N, stabilisation de 2~s. WFW étudié uniquement au plan $z=0{,}45$~m. Robustesse évaluée sur trois graines. Front de Pareto réduit en zone sécurisée. Aucune validation sur prototype.
+\subsection{Discussion générale}
+
+L'étude montre l'intérêt d'une chaîne de traitement organisée en blocs. Le premier bloc assure la cohérence des paramètres et du modèle. Le deuxième évite que l'optimisation utilise des positions géométriquement possibles mais mécaniquement irréalisables. Le troisième recherche l'ordre de visite le plus intéressant selon le temps et l'énergie. Le quatrième transforme les solutions en trajectoires temporelles et vérifie leur conformité.
+
+Cette organisation répond directement aux contraintes particulières d'un CDPR. La trajectoire ne peut pas être définie uniquement par la distance entre les points. Elle doit également respecter la possibilité de maintenir les huit câbles en tension, les limites cinématiques et la nécessité de s'arrêter pour l'acquisition.
+
+Les résultats de la zone sécurisée sont particulièrement significatifs. Pour les deux tailles de grille, l'optimisation réduit à la fois le temps et l'énergie par rapport au zigzag. Les gains sont de $22{,}7\%$ et $21{,}0\%$ sur le temps, et de $27{,}6\%$ et $28{,}7\%$ sur l'énergie. La stratégie proposée ne privilégie donc pas un seul objectif au détriment de l'autre dans les configurations de référence.
+
+L'étude montre également que l'agrandissement de la zone de travail n'est pas nécessairement bénéfique. Il augmente les distances, sollicite davantage les câbles et peut conduire au rejet de points. La zone sécurisée constitue donc un compromis plus pertinent pour une mission dont la priorité est de garantir une couverture complète et répétable.
+
+\subsection{Limites de l'étude}
+
+Les résultats présentés sont issus de simulations numériques. Les câbles sont modélisés comme rigides, rectilignes et inextensibles. Leur masse, leur élasticité et leur affaissement ne sont pas pris en compte. Le vent, les vibrations du bâti et les autres perturbations extérieures sont également absents du modèle.
+
+L'énergie calculée est une énergie mécanique quasi-statique. Elle ne représente pas directement la consommation électrique des moteurs, car elle ne prend pas en compte les pertes, les frottements, le rendement des actionneurs ou les transitoires électriques.
+
+La masse opérationnelle, la tension maximale de $58$~N et le temps de stabilisation de $2$~s sont des valeurs issues de mesures, de choix de conception ou d'hypothèses de dimensionnement. Leur confirmation sur le prototype est nécessaire pour transposer les résultats numériques au système réel.
+
+Enfin, l'étude du WFW est principalement réalisée à la hauteur de référence $z=0{,}45$~m. La robustesse a été évaluée sur un nombre limité de graines et les tensions n'ont pas été analysées de manière aussi complète dans les zones étendues que dans la zone sécurisée.
+
+Ces limites définissent le domaine de validité des résultats. Elles ne remettent pas en cause la comparaison numérique entre les trajectoires, mais elles imposent de présenter les gains comme des performances obtenues dans le modèle étudié.
 
 \subsection{Perspectives}
 
-\begin{itemize}
-\item Préciser la courbe énergie--étendue par des bornes intermédiaires.
-\item Calculer les tensions maximales minimales sur les zones étendues.
-\item Augmenter le nombre de graines pour des tests statistiques.
-\item Valider sur le prototype du SP1.
-\item Intégrer une replanification en temps réel.
-\end{itemize}
+Plusieurs prolongements sont envisageables. La première étape consiste à valider la masse opérationnelle, les tensions et la trajectoire sur le prototype du SP1. Le modèle pourra ensuite intégrer l'élasticité des câbles et, si nécessaire, leur affaissement sous l'effet du poids propre.
+
+Il sera également pertinent d'étudier l'influence du vent et des vibrations sur la stabilité de la plateforme. Les tensions maximales devront être calculées plus systématiquement sur les zones étendues et le nombre de graines pourra être augmenté afin de renforcer l'analyse statistique de la robustesse.
+
+À plus long terme, le système pourra intégrer un retour des capteurs pendant l'exécution et une replanification en temps réel. Les trajectoires calculées dans ce chapitre pourront alors être transmises au SP3, qui exploitera les images acquises pour l'analyse des plants.
 
 \section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
 
-Ce chapitre a présenté l'architecture du robot Tandem, sa chaîne de traitement en quatre macro-blocs et le dimensionnement de NSGA-II (50 exécutions + 12 de robustesse). Paramètres retenus : 500 individus / 2000 générations ($7\times7$) et 600 / 5000 ($9\times9$).
+Ce chapitre a présenté l'étude complète du robot Tandem, depuis son architecture matérielle jusqu'à l'évaluation numérique des trajectoires. La plateforme mobile, suspendue par huit câbles, transporte une caméra orientée vers la parcelle. Son déplacement repose sur l'action coordonnée des moteurs et des enrouleurs, tandis que la mission suit une séquence composée du déplacement, de l'arrêt, de la stabilisation et de l'acquisition.
 
-Sur la zone sécurisée, les trajectoires optimisées réduisent le temps de 22,7~\% ($7\times7$) et 21,0~\% ($9\times9$), et l'énergie de 27,6~\% et 28,7~\%. Les tensions restent sous 58~N (maximum 35,7~N). L'extension de la zone augmente fortement l'énergie (+28~\% / +116~\%). La zone sécurisée constitue un bon compromis pour la mission envisagée. La confirmation passera par une validation sur prototype.
+L'architecture logicielle développée en Python est organisée en quatre blocs. Le premier prépare les données et construit le modèle du robot. Le deuxième génère les points de vue et élimine ceux qui ne respectent pas les contraintes du WFW. Le troisième construit la matrice des coûts et applique NSGA-II pour optimiser simultanément le temps et l'énergie. Le quatrième profile les trajectoires, vérifie les contraintes et compare les résultats à une baseline en zigzag.
+
+Le dimensionnement de NSGA-II a conduit à retenir une population de 500 individus et 2~000 générations pour la grille $7\times7$, puis 600 individus et 5~000 générations pour la grille $9\times9$. Dans la zone sécurisée, les trajectoires optimisées réduisent le temps de déplacement de $22{,}7\%$ et $21{,}0\%$, et l'énergie de $27{,}6\%$ et $28{,}7\%$ respectivement. Les tensions restent inférieures à la limite de $58$~N, avec une valeur maximale observée d'environ $35{,}7$~N dans l'étude de la zone sécurisée.
+
+L'extension de la zone de travail augmente le coût de la mission, en particulier l'énergie. Elle ajoute environ $28\%$ d'énergie pour la grille $7\times7$ et $116\%$ pour la grille $9\times9$. La zone sécurisée est donc retenue comme zone de service, car elle garantit la couverture complète des points tout en conservant un meilleur compromis entre faisabilité, durée et énergie.
+
+Les trajectoires obtenues constituent une base numérique cohérente pour la suite du projet. Leur validation sur le prototype et leur exploitation pour l'analyse des images représentent les prochaines étapes du travail.

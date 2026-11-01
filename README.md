@@ -46,6 +46,10 @@ reste locale et est ignorée par Git; voir `data/snapshots/README.md` pour le pa
 - `docs/GUIDE_UTILISATEUR_GUI.md` : utiliser l’interface et les exports
 - `docs/GUIDE_DEVELOPPEUR_GUI.md` : architecture, tests et reprise du projet
 - `docs/SUIVI_AMELIORATION_GUI.md` : registre des phases d’amélioration
+- `docs/REFERENCE_RESULTATS_MEMOIRE_CHAPITRE3.md` : résultats scientifiques de référence issus du chapitre 3 du mémoire
+- `docs/PLAN_NOUVELLE_PARTIE3.md` : plan détaillé de réorganisation et de rédaction de la partie 3
+- `docs/PLAN_PARTIE3_ARCHITECTURE_PAR_BLOCS.md` : plan de rédaction par architectures matérielle et logicielle
+- `docs/PLAN_DEFINITIF_PARTIE3.md` : plan définitif du chapitre 3, fondé sur l’ancien chapitre et la rédaction par blocs
 - `docs/architecture_current.md` : cartographie historique du pipeline avant l’extraction des services et l’ajout de la GUI
 
 ## Structure
