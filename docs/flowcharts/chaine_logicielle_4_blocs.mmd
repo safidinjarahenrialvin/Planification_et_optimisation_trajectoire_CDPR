@@ -1,0 +1,19 @@
+%%{init: {'theme':'base', 'themeVariables': {'fontFamily':'Arial', 'primaryColor':'#E8F1FB', 'primaryTextColor':'#102A43', 'primaryBorderColor':'#2F6690', 'lineColor':'#486581', 'secondaryColor':'#F0F4F8', 'tertiaryColor':'#FFF4CC'}}}%%
+flowchart LR
+    A[/Paramètres physiques et mission/] --> B[Bloc 1\nPréparation des données]
+    B --> C[Bloc 2\nGénération et filtrage\nde l’espace de travail]
+    C --> D[Bloc 3\nCalcul des coûts et\noptimisation NSGA-II]
+    D --> E[Bloc 4\nProfilage, validation\net comparaison]
+    E --> F[/Trajectoire validée\net indicateurs de performance/]
+
+    B -.-> B1[Config + RobotModel + WFW]
+    C -.-> C1[Points faisables]
+    D -.-> D1[Front de Pareto + ordres]
+    E -.-> E1[Profils + gains + figures]
+
+    classDef input fill:#EAF4EA,stroke:#2E7D32,color:#173B1A;
+    classDef block fill:#E8F1FB,stroke:#2F6690,color:#102A43;
+    classDef output fill:#EDE9FE,stroke:#6B46C1,color:#322659;
+    class A,F input;
+    class B,C,D,E block;
+    class B1,C1,D1,E1 output;

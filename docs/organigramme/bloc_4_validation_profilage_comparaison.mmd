@@ -1,0 +1,35 @@
+%%{init: {'theme':'base', 'themeVariables': {'fontFamily':'Arial', 'primaryColor':'#E8F1FB', 'primaryTextColor':'#102A43', 'primaryBorderColor':'#2F6690', 'lineColor':'#486581', 'secondaryColor':'#F0F4F8', 'tertiaryColor':'#FFF4CC'}}}%%
+flowchart TD
+    A([Début du bloc 4]) --> B[/Entrées : ordres Pareto, points, matrice des coûts, Config/]
+    B --> C[Extraire les trajectoires et vérifier l’ordre des waypoints]
+    C --> D{Centre au départ et au retour, sans doublon ?}
+    D -- Non --> E[[Échec : trajectoire incohérente]]
+    D -- Oui --> F[Générer les profils LSPB segment par segment]
+    F --> G[Calculer position, vitesse, accélération et temps cumulé]
+    G --> H[Ajouter le temps de stabilisation à chaque point de vue]
+    H --> I[Revalider points, transitions, coûts et contraintes cinématiques]
+    I --> J[Contrôler Pareto, cohérence croisée et retour au centre]
+    J --> K{Présence d’un FAIL ?}
+    K -- Oui --> L[Statut global : FAIL]
+    K -- Non --> M{Présence d’un WARN ?}
+    M -- Oui --> N[Statut global : WARN]
+    M -- Non --> O[Statut global : PASS]
+    L --> P[Générer validation_report et figures]
+    N --> P
+    O --> P
+    P --> Q[Construire la baseline zigzag ou nearest-neighbor si grille incomplète]
+    Q --> R[Évaluer baseline et trajectoires optimisées avec la même matrice des coûts]
+    R --> S[Calculer gains de temps et d’énergie]
+    S --> T[/Sorties : profils, trajectoires, rapport, front de Pareto, comparaison et figures/]
+    T --> U([Fin du bloc 4])
+
+    classDef input fill:#EAF4EA,stroke:#2E7D32,color:#173B1A;
+    classDef process fill:#E8F1FB,stroke:#2F6690,color:#102A43;
+    classDef decision fill:#FFF4CC,stroke:#B7791F,color:#5F370E;
+    classDef output fill:#EDE9FE,stroke:#6B46C1,color:#322659;
+    classDef error fill:#FDE8E8,stroke:#C53030,color:#63171B;
+    class A,B input;
+    class C,F,G,H,I,J,L,N,O,P,Q,R,S process;
+    class D,K,M decision;
+    class T,U output;
+    class E error;

@@ -1,0 +1,40 @@
+%%{init: {'theme':'base', 'themeVariables': {'fontFamily':'Arial', 'primaryColor':'#E8F1FB', 'primaryTextColor':'#102A43', 'primaryBorderColor':'#2F6690', 'lineColor':'#486581', 'secondaryColor':'#F0F4F8', 'tertiaryColor':'#FFF4CC'}}}%%
+flowchart TD
+    A([Début du bloc 3]) --> B[/Entrées : points faisables, RobotModel, Config, K/]
+    B --> C[Énumérer chaque paire de points]
+    C --> D[Calculer distance et temps de mouvement par LSPB]
+    D --> E[Subdiviser la transition en K sous-pas]
+    E --> F[Résoudre les tensions et intégrer l’énergie quasi-statique]
+    F --> G{Transition faisable ?}
+    G -- Oui --> H[Enregistrer temps, énergie et faisabilité]
+    G -- Non --> I[Enregistrer la paire comme infaisable]
+    H --> J{Toutes les paires traitées ?}
+    I --> J
+    J -- Non --> C
+    J -- Oui --> K[/Matrice des coûts : distance, temps, énergie, faisabilité/]
+    K --> L[Encoder chaque solution comme permutation des points non centraux]
+    L --> M[Ajouter le centre au départ et au retour]
+    M --> N[Évaluer la durée et l’énergie du tour]
+    N --> O{Une paire du tour est infaisable ?}
+    O -- Oui --> P[Appliquer une pénalité aux objectifs]
+    O -- Non --> Q[Conserver les objectifs temps–énergie]
+    P --> R[NSGA-II : sélection, croisement OX et mutation par inversion]
+    Q --> R
+    R --> S{Nombre de générations atteint ?}
+    S -- Non --> N
+    S -- Oui --> T[Extraire puis filtrer strictement le front non dominé]
+    T --> U{Front dégénéré ?}
+    U -- Oui --> V[[Arrêt : aucune tournée faisable]]
+    U -- Non --> W[/Sorties : solutions Pareto, ordres de visite, time_opt, energy_opt, compromise/]
+    W --> X([Fin du bloc 3])
+
+    classDef input fill:#EAF4EA,stroke:#2E7D32,color:#173B1A;
+    classDef process fill:#E8F1FB,stroke:#2F6690,color:#102A43;
+    classDef decision fill:#FFF4CC,stroke:#B7791F,color:#5F370E;
+    classDef output fill:#EDE9FE,stroke:#6B46C1,color:#322659;
+    classDef error fill:#FDE8E8,stroke:#C53030,color:#63171B;
+    class A,B input;
+    class C,D,E,F,H,I,K,L,M,N,P,Q,R,T process;
+    class G,J,O,S,U decision;
+    class W,X output;
+    class V error;

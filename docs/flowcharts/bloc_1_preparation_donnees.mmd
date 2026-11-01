@@ -1,0 +1,24 @@
+%%{init: {'theme':'base', 'themeVariables': {'fontFamily':'Arial', 'primaryColor':'#E8F1FB', 'primaryTextColor':'#102A43', 'primaryBorderColor':'#2F6690', 'lineColor':'#486581', 'secondaryColor':'#F0F4F8', 'tertiaryColor':'#FFF4CC'}}}%%
+flowchart TD
+    A([Début du pipeline]) --> B[/Entrées : géométrie, masse, hauteur, tensions, limites cinématiques, grille, paramètres NSGA-II, graine/]
+    B --> C[Lire les paramètres et construire Config]
+    C --> D{Configuration cohérente et complète ?}
+    D -- Non --> E[[Arrêt : erreur de configuration]]
+    D -- Oui --> F[Valider les bornes physiques et les paramètres d'optimisation]
+    F --> G[Calculer l'empreinte de configuration]
+    G --> H[Initialiser le dossier de résultats et le manifeste du run]
+    H --> I[Construire RobotModel]
+    I --> J[Construire WFW et fonctions cinématiques]
+    J --> K[/Sorties : configuration validée, modèle robotique, WFW, empreinte et dossier de résultats/]
+    K --> L([Fin du bloc 1])
+
+    classDef input fill:#EAF4EA,stroke:#2E7D32,color:#173B1A;
+    classDef process fill:#E8F1FB,stroke:#2F6690,color:#102A43;
+    classDef decision fill:#FFF4CC,stroke:#B7791F,color:#5F370E;
+    classDef output fill:#EDE9FE,stroke:#6B46C1,color:#322659;
+    classDef error fill:#FDE8E8,stroke:#C53030,color:#63171B;
+    class A,B input;
+    class C,F,G,H,I,J process;
+    class D decision;
+    class K,L output;
+    class E error;
